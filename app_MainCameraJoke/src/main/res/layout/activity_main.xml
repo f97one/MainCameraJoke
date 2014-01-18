@@ -1,7 +1,18 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="net.formula97.android.app_maincamerajoke.MainActivity"
-    tools:ignore="MergeRootFrame" />
+    tools:ignore="MergeRootFrame" >
+
+    <SurfaceView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/surfaceView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="@dimen/activity_vertical_margin" />
+</RelativeLayout>
