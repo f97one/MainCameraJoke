@@ -1,5 +1,6 @@
 package net.formula97.android.app_maincamerajoke;
 
+import android.hardware.Camera;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -7,12 +8,22 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 
-public class MainActivity extends ActionBarActivity {
+/**
+ *
+ */
+public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback {
 
+    private Camera camera;
+
+    /**
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,7 +36,11 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-
+    /**
+     *
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         
@@ -34,6 +49,11 @@ public class MainActivity extends ActionBarActivity {
         return true;
     }
 
+    /**
+     *
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -44,6 +64,51 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     *
+     * @param holder
+     */
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+
+    }
+
+    /**
+     *
+     * @param holder
+     * @param format
+     * @param width
+     * @param height
+     */
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    /**
+     *
+     * @param holder
+     */
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
+    }
+
+    private Camera safeCamOpen(int camId) {
+        Camera c = null;
+
+        int numberOfCams = Camera.getNumberOfCameras();
+
+        for (int i = 0; i <= numberOfCams; i++) {
+            Camera.CameraInfo info = null;
+            Camera.getCameraInfo(i, info);
+            if (info.facing == camId) {
+                c = Camera.open(i);
+            }
+        }
+        return c;
     }
 
     /**
