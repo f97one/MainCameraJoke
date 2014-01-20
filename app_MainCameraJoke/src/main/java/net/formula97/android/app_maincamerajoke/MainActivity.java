@@ -9,9 +9,12 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+
+import java.io.IOException;
 
 /**
  *
@@ -19,6 +22,8 @@ import android.os.Build;
 public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback {
 
     private Camera camera;
+
+    private SurfaceView camPreview;
 
     /**
      *
@@ -34,6 +39,8 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+
+        camPreview = (SurfaceView) findViewById(R.id.sv_camPreview);
     }
 
     /**
@@ -72,7 +79,13 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-
+        //カメラを開く
+        try {
+            camera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
+            camera.setPreviewDisplay(holder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -84,7 +97,8 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+        camera.stopPreview();
+        camera.startPreview();
     }
 
     /**
@@ -93,7 +107,20 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        camera.stopPreview();
+        camera.release();
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        camPreview.getHolder().addCallback(this);
+        camPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     private Camera safeCamOpen(int camId) {
