@@ -1,26 +1,20 @@
 package net.formula97.android.app_maincamerajoke;
 
 import android.hardware.Camera;
-import android.hardware.Camera.CameraInfo;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
-
-import java.io.IOException;
 
 /**
  *
  */
-public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback {
+public class MainActivity extends ActionBarActivity {
 
     private Camera camera;
 
@@ -74,91 +68,15 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     *
-     * @param holder
-     */
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        //カメラを開く
-        try {
-            camera = safeCamOpen(CameraInfo.CAMERA_FACING_BACK);
-            camera.setPreviewDisplay(holder);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     *
-     * @param holder
-     * @param format
-     * @param width
-     * @param height
-     */
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        int[] previewSize = getSVSize();
-
-        camera.stopPreview();
-
-        Camera.Parameters parameters = camera.getParameters();
-        parameters.setPreviewSize(previewSize[0], previewSize[1]);
-        camera.setParameters(parameters);
-
-        camera.startPreview();
-    }
-
-    /**
-     *
-     * @param holder
-     */
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        camera.stopPreview();
-        camera.release();
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        camPreview.getHolder().addCallback(this);
 
-        // SurfaceHolder#setType()がAPI Level 11(=Build.VERSION_CODES.HONEYCOMB)以上では
-        // 無視されるので、条件分けをする必要はないといえばないのだが、念のため。
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            camPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-    }
-
-    private Camera safeCamOpen(int camId) {
-        Camera c = null;
-
-        int numberOfCams = Camera.getNumberOfCameras();
-
-        for (int i = 0; i <= numberOfCams; i++) {
-            Camera.CameraInfo info = null;
-            Camera.getCameraInfo(i, info);
-            if (info.facing == camId) {
-                c = Camera.open(i);
-            }
-        }
-        return c;
-    }
-
-    /**
-     * SurfaceViewの大きさを取得する。
-     * @return int[]型、SurfaceViewの幅(=width)、高さ(=height)の配列
-     */
-    private int[] getSVSize() {
-        int[] ret = { camPreview.getWidth(), camPreview.getHeight()};
-
-        return ret;
     }
 
     /**

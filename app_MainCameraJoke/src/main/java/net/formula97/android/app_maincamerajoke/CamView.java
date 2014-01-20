@@ -1,8 +1,13 @@
 package net.formula97.android.app_maincamerajoke;
 
 import android.content.Context;
+import android.hardware.Camera;
+import android.hardware.Camera.CameraInfo;
+import android.os.Build;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.io.IOException;
 
 /**
  * Created by HAJIME on 14/01/20.
@@ -11,6 +16,9 @@ public class CamView extends SurfaceView implements SurfaceHolder.Callback {
 
     private Context ctx;
 
+    private SurfaceHolder holder;
+    private Camera camera;
+
     /**
      * コンストラクタ。引き渡されたContextオブジェクトを記憶する。
      * @param context Context型、引き渡されたContextオブジェクト
@@ -18,6 +26,13 @@ public class CamView extends SurfaceView implements SurfaceHolder.Callback {
     public CamView(Context context) {
         super(context);
         this.ctx = context;
+        holder = getHolder();
+        holder.addCallback(this);
+        // SurfaceHolder#setType()がAPI Level 11(=Build.VERSION_CODES.HONEYCOMB)以上では
+        // 無視されるので、条件分けをする必要はないといえばないのだが、念のため。
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        }
     }
 
     /**
@@ -31,7 +46,13 @@ public class CamView extends SurfaceView implements SurfaceHolder.Callback {
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-
+        // カメラを開く
+        camera = safeCamOpen(CameraInfo.CAMERA_FACING_BACK);
+        try {
+            camera.setPreviewDisplay(holder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -47,7 +68,16 @@ public class CamView extends SurfaceView implements SurfaceHolder.Callback {
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        int viewWidth = ((SurfaceView) findViewById(R.id.sv_camPreview)).getWidth();
+        int viewHeight = ((SurfaceView) findViewById(R.id.sv_camPreview)).getHeight();
 
+        camera.stopPreview();
+
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setPreviewSize(viewWidth, viewHeight);
+        camera.setParameters(parameters);
+
+        camera.startPreview();
     }
 
     /**
@@ -61,7 +91,8 @@ public class CamView extends SurfaceView implements SurfaceHolder.Callback {
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-
+        camera.stopPreview();
+        camera.release();
     }
 
     /**
@@ -79,4 +110,20 @@ public class CamView extends SurfaceView implements SurfaceHolder.Callback {
     public Context getCtx() {
         return ctx;
     }
+
+    private Camera safeCamOpen(int camId) {
+        Camera c = null;
+
+        int numberOfCams = Camera.getNumberOfCameras();
+
+        for (int i = 0; i <= numberOfCams; i++) {
+            Camera.CameraInfo info = null;
+            Camera.getCameraInfo(i, info);
+            if (info.facing == camId) {
+                c = Camera.open(i);
+            }
+        }
+        return c;
+    }
+
 }
