@@ -1,6 +1,7 @@
 package net.formula97.android.app_maincamerajoke;
 
 import android.hardware.Camera;
+import android.hardware.Camera.CameraInfo;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -81,7 +82,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     public void surfaceCreated(SurfaceHolder holder) {
         //カメラを開く
         try {
-            camera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
+            camera = safeCamOpen(CameraInfo.CAMERA_FACING_BACK);
             camera.setPreviewDisplay(holder);
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,7 +98,14 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        int[] previewSize = getSVSize();
+
         camera.stopPreview();
+
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setPreviewSize(previewSize[0], previewSize[1]);
+        camera.setParameters(parameters);
+
         camera.startPreview();
     }
 
@@ -141,6 +149,16 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
             }
         }
         return c;
+    }
+
+    /**
+     * SurfaceViewの大きさを取得する。
+     * @return int[]型、SurfaceViewの幅(=width)、高さ(=height)の配列
+     */
+    private int[] getSVSize() {
+        int[] ret = { camPreview.getWidth(), camPreview.getHeight()};
+
+        return ret;
     }
 
     /**
