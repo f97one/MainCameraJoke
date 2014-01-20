@@ -26,7 +26,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     private SurfaceView camPreview;
 
     /**
-     *
+     * Activity生成時に最初に呼ばれる。
      * @param savedInstanceState
      */
     @Override
@@ -115,7 +115,12 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     protected void onResume() {
         super.onResume();
         camPreview.getHolder().addCallback(this);
-        camPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        // SurfaceHolder#setType()がAPI Level 11(=Build.VERSION_CODES.HONEYCOMB)以上では
+        // 無視されるので、条件分けをする必要はないといえばないのだが、念のため。
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            camPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        }
     }
 
     @Override
