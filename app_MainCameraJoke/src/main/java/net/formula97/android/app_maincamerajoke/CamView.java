@@ -27,7 +27,7 @@ public class CamView extends SurfaceView implements SurfaceHolder.Callback {
         super(context);
         this.ctx = context;
         holder = getHolder();
-        holder.addCallback(this);
+        //holder.addCallback(this);
         // SurfaceHolder#setType()がAPI Level 11(=Build.VERSION_CODES.HONEYCOMB)以上では
         // 無視されるので、条件分けをする必要はないといえばないのだが、念のため。
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {

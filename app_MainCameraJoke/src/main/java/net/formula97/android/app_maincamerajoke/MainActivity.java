@@ -7,6 +7,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +17,10 @@ import android.view.ViewGroup;
  */
 public class MainActivity extends ActionBarActivity {
 
-    private Camera camera;
+    //private Camera camera;
 
     private SurfaceView camPreview;
+    private SurfaceHolder holder;
 
     /**
      * Activity生成時に最初に呼ばれる。
@@ -71,12 +73,16 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        SurfaceHolder.Callback callback = new CamView(this);
+        holder = camPreview.getHolder();
+        holder.addCallback(callback);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        SurfaceHolder.Callback callback = new CamView(this);
+        holder.removeCallback(callback);
     }
 
     /**
