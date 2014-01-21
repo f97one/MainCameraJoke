@@ -17,7 +17,8 @@ import android.view.ViewGroup;
  */
 public class MainActivity extends ActionBarActivity {
 
-    //private Camera camera;
+    private Camera mCamera;
+    private CamView camView;
 
     private SurfaceView camPreview;
     private SurfaceHolder holder;
@@ -73,16 +74,32 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        SurfaceHolder.Callback callback = new CamView(this);
-        holder = camPreview.getHolder();
-        holder.addCallback(callback);
+
+        // SurfaceViewにプレビューをセットする
+        //mCamera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
+        mCamera = Camera.open();
+        camView = new CamView(this, mCamera);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        SurfaceHolder.Callback callback = new CamView(this);
-        holder.removeCallback(callback);
+        camView.releaseCam();
+    }
+
+    private Camera safeCamOpen(int camId) {
+        Camera c = null;
+
+        int numberOfCams = Camera.getNumberOfCameras();
+
+        for (int i = 0; i <= numberOfCams; i++) {
+            Camera.CameraInfo info = null;
+            Camera.getCameraInfo(i, info);
+            if (info.facing == camId) {
+                c = Camera.open(i);
+            }
+        }
+        return c;
     }
 
     /**
