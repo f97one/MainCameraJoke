@@ -1,6 +1,7 @@
 package net.formula97.android.app_maincamerajoke;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.os.Build;
@@ -124,6 +125,20 @@ public class CamView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
         return c;
+    }
+
+    /**
+     * デバイスがカメラを持っているかどうかを判断する。
+     * @param context Context型、アプリケーションコンテクスト
+     * @return boolean型、カメラを有している場合はtrue、そうでない場合はfalse
+     * @see http://developer.android.com/guide/topics/media/camera.html#detect-camera
+     */
+    public boolean checkCameraHardware(Context context) {
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }
