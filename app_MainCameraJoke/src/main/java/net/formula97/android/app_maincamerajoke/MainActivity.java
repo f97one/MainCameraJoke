@@ -1,6 +1,8 @@
 package net.formula97.android.app_maincamerajoke;
 
+import android.annotation.TargetApi;
 import android.hardware.Camera;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -12,16 +14,18 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.List;
+
 /**
  *
  */
 public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback {
 
     private Camera mCamera;
-    private CamView camView;
+    //private CamView camView;
 
     private SurfaceView camPreview;
-    private SurfaceHolder holder;
+    //private SurfaceHolder holder;
 
     /**
      * Activity生成時に最初に呼ばれる。
@@ -39,6 +43,9 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         }
 
         camPreview = (SurfaceView) findViewById(R.id.sv_camPreview);
+        camPreview.getHolder().addCallback(this);
+        // API Level 11以上では無視される。
+        camPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     /**
@@ -76,25 +83,29 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         super.onResume();
 
         // SurfaceViewにプレビューをセットする
-        //mCamera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
-        mCamera = Camera.open();
-        camView = new CamView(this, mCamera);
+        mCamera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
+        //mCamera = Camera.open();
+        //camView = new CamView(this, mCamera);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        camView.releaseCam();
+        mCamera.stopPreview();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mCamera.release();
     }
 
     private Camera safeCamOpen(int camId) {
         Camera c = null;
-
+        Camera.CameraInfo info = new Camera.CameraInfo();
         int numberOfCams = Camera.getNumberOfCameras();
 
         for (int i = 0; i <= numberOfCams; i++) {
-            Camera.CameraInfo info = null;
-            Camera.getCameraInfo(i, info);
             if (info.facing == camId) {
                 c = Camera.open(i);
                 break;
@@ -114,7 +125,13 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-
+        // カメラプレビューを開始する
+        Camera.Parameters parameters = mCamera.getParameters();
+        List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
+        Camera.Size selected = sizeList.get(0);
+        parameters.setPreviewSize(selected.width, selected.height);
+        mCamera.setDisplayOrientation(90);  // 縦画面にする
+        mCamera.startPreview();
     }
 
     /**
