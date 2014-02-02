@@ -1,8 +1,6 @@
 package net.formula97.android.app_maincamerajoke;
 
-import android.annotation.TargetApi;
 import android.hardware.Camera;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -14,6 +12,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -21,31 +20,37 @@ import java.util.List;
  */
 public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback {
 
-    private Camera mCamera;
+    Camera mCamera;
     //private CamView camView;
 
-    private SurfaceView camPreview;
+    SurfaceView camPreview;
     //private SurfaceHolder holder;
 
     /**
      * Activity生成時に最初に呼ばれる。
      * @param savedInstanceState
      */
+    @SuppressWarnings("deprecation")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
-                    .commit();
-        }
+//        if (savedInstanceState == null) {
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.container, new PlaceholderFragment())
+//                    .commit();
+//        }
 
         camPreview = (SurfaceView) findViewById(R.id.sv_camPreview);
         camPreview.getHolder().addCallback(this);
         // API Level 11以上では無視される。
         camPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        // SurfaceViewにプレビューをセットする
+        mCamera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
+        //mCamera = Camera.open();
+        //camView = new CamView(this, mCamera);
     }
 
     /**
@@ -82,10 +87,6 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     protected void onResume() {
         super.onResume();
 
-        // SurfaceViewにプレビューをセットする
-        mCamera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
-        //mCamera = Camera.open();
-        //camView = new CamView(this, mCamera);
     }
 
     @Override
@@ -125,13 +126,11 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        // カメラプレビューを開始する
-        Camera.Parameters parameters = mCamera.getParameters();
-        List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
-        Camera.Size selected = sizeList.get(0);
-        parameters.setPreviewSize(selected.width, selected.height);
-        mCamera.setDisplayOrientation(90);  // 縦画面にする
-        mCamera.startPreview();
+        try {
+            mCamera.setPreviewDisplay(camPreview.getHolder());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -147,6 +146,13 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        // カメラプレビューを開始する
+        Camera.Parameters parameters = mCamera.getParameters();
+        List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
+        Camera.Size selected = sizeList.get(0);
+        parameters.setPreviewSize(selected.width, selected.height);
+        mCamera.setDisplayOrientation(90);  // 縦画面にする
+        mCamera.startPreview();
 
     }
 
