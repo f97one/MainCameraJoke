@@ -26,6 +26,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     SurfaceView camPreview;
     //private SurfaceHolder holder;
 
+    private boolean mProgressFlag = false;
     /**
      * Activity生成時に最初に呼ばれる。
      * @param savedInstanceState
@@ -171,8 +172,54 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     }
 
     /**
-     * A placeholder fragment containing a simple view.
+     * プレビュー表示をキャプチャーするためのコールバックをセットする。
      */
+    public void takePreviewRawData() {
+        if (!mProgressFlag) {
+            mProgressFlag = true;
+            mCamera.setPreviewCallback(editPreviewImage);
+            //プレビューコールバックをセット
+        }
+    }
+
+    private final Camera.PreviewCallback editPreviewImage =
+            new Camera.PreviewCallback() {
+
+                /**
+                 * Called as preview frames are displayed.  This callback is invoked
+                 * on the event thread {@link #open(int)} was called from.
+                 * <p/>
+                 * <p>If using the {@link android.graphics.ImageFormat#YV12} format,
+                 * refer to the equations in {@link android.hardware.Camera.Parameters#setPreviewFormat}
+                 * for the arrangement of the pixel data in the preview callback
+                 * buffers.
+                 *
+                 * @param data   the contents of the preview frame in the format defined
+                 *               by {@link android.graphics.ImageFormat}, which can be queried
+                 *               with {@link android.hardware.Camera.Parameters#getPreviewFormat()}.
+                 *               If {@link android.hardware.Camera.Parameters#setPreviewFormat(int)}
+                 *               is never called, the default will be the YCbCr_420_SP
+                 *               (NV21) format.
+                 * @param camera the Camera service object.
+                 */
+                @Override
+                public void onPreviewFrame(byte[] data, Camera camera) {
+                    mCamera.setPreviewCallback(null);  // プレビューコールバックを解除
+
+                    mCamera.stopPreview();  // プレビュー表示をいったん停止
+
+                    // TODO 内蔵ストレージにプレビューを上書きする処理を書く
+
+                    // TODO 上書きしたプレビューの「明るさ」要素を分析する処理を書く
+
+                    mCamera.startPreview(); // プレビュー表示を再開
+                    mProgressFlag = false;  // コールバックセットを指示
+                }
+            };
+
+        /**
+         * A placeholder fragment containing a simple view.
+         */
     public static class PlaceholderFragment extends Fragment {
 
         public PlaceholderFragment() {
