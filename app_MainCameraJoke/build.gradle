@@ -17,6 +17,7 @@ android {
     }
     buildTypes {
         release {
+            debuggable false
             runProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
@@ -25,4 +26,5 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:19.0.1'
+    androidTestCompile 'com.jayway.android.robotium:robotium-solo:4.3.1'
 }
