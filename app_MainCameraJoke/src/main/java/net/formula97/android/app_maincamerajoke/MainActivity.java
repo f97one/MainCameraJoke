@@ -1,5 +1,6 @@
 package net.formula97.android.app_maincamerajoke;
 
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -24,6 +25,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     //private CamView camView;
 
     SurfaceView camPreview;
+    SurfaceView hudView;
     //private SurfaceHolder holder;
 
     private boolean mProgressFlag = false;
@@ -42,7 +44,6 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
 //                    .add(R.id.container, new PlaceholderFragment())
 //                    .commit();
 //        }
-
         camPreview = (SurfaceView) findViewById(R.id.sv_camPreview);
         camPreview.getHolder().addCallback(this);
         // API Level 11以上では無視される。
@@ -50,8 +51,11 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
 
         // SurfaceViewにプレビューをセットする
         mCamera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
-        //mCamera = Camera.open();
-        //camView = new CamView(this, mCamera);
+
+        // オーバーレイ表示
+        hudView = (SurfaceView)findViewById(R.id.hudDrawView);
+        hudView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        hudView.getHolder().addCallback(this);
     }
 
     /**

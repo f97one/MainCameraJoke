@@ -16,11 +16,13 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private Context mContext;
+    private SurfaceHolder mHolder;
 
     public HudView(Context context) {
         super(context);
         this.mContext = context;
-        getHolder().addCallback(this);
+        mHolder = getHolder();
+        mHolder.addCallback(this);
     }
 
     @Override
