@@ -23,13 +23,13 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     SurfaceView camPreview;
     SurfaceView hudView;
     //private SurfaceHolder holder;
-    private final String mWakeLockTag = "net.formula97.android.app_maincamerajoke.ACTION_SCREEN_KEEP";
+    private static final String wakeLockTag = "net.formula97.android.app_maincamerajoke.ACTION_SCREEN_KEEP";
     PowerManager.WakeLock lock = null;
     private boolean mProgressFlag = false;
 
     /**
      * Activity生成時に最初に呼ばれる。
-     * @param savedInstanceState
+     * @param savedInstanceState 保存されたBundleオブジェクト。
      */
     @SuppressWarnings("deprecation")
     @Override
@@ -55,7 +55,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         // WAKE_LOCKの取得準備
         PowerManager powerManager = (PowerManager)getSystemService(POWER_SERVICE);
         lock = powerManager.newWakeLock(
-                PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, mWakeLockTag);
+                PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, wakeLockTag);
 
     }
 
@@ -82,6 +82,11 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         mCamera.release();
     }
 
+    /**
+     * 安全にカメラを開く。
+     * @param camId システムに登録されているカメラの向きを表すID
+     * @return 開くことができたCameraオブジェクト
+     */
     private Camera safeCamOpen(int camId) {
         Camera c = null;
         Camera.CameraInfo info = new Camera.CameraInfo();
