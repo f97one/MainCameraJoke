@@ -3,15 +3,10 @@ package net.formula97.android.app_maincamerajoke;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.os.PowerManager;
 import android.support.v7.app.ActionBarActivity;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.view.ViewGroup;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,8 +22,10 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     SurfaceView camPreview;
     SurfaceView hudView;
     //private SurfaceHolder holder;
-
+    private final String mWakeLockTag = "net.formula97.android.app_maincamerajoke.ACTION_SCREEN_KEEP";
+    PowerManager.WakeLock lock = null;
     private boolean mProgressFlag = false;
+
     /**
      * Activity生成時に最初に呼ばれる。
      * @param savedInstanceState
@@ -39,11 +36,13 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        if (savedInstanceState == null) {
-//            getSupportFragmentManager().beginTransaction()
-//                    .add(R.id.container, new PlaceholderFragment())
-//                    .commit();
-//        }
+        // オーバーレイ表示
+        HudView hudViewCallback = new HudView(getApplicationContext());
+        hudView = (SurfaceView)findViewById(R.id.hudDrawView);
+        hudView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        hudView.getHolder().addCallback(hudViewCallback);
+
+        // カメラプレビュー表示
         camPreview = (SurfaceView) findViewById(R.id.sv_camPreview);
         camPreview.getHolder().addCallback(this);
         // API Level 11以上では無視される。
@@ -52,52 +51,28 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         // SurfaceViewにプレビューをセットする
         mCamera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
 
-        // オーバーレイ表示
-        hudView = (SurfaceView)findViewById(R.id.hudDrawView);
-        hudView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        hudView.getHolder().addCallback(this);
-    }
+        // WAKE_LOCKの取得準備
+        PowerManager powerManager = (PowerManager)getSystemService(POWER_SERVICE);
+        lock = powerManager.newWakeLock(
+                PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, mWakeLockTag);
 
-    /**
-     *
-     * @param menu
-     * @return
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    /**
-     *
-     * @param item
-     * @return
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
+        // WAKE_LOCKを取得する
+        lock.acquire();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mCamera.stopPreview();
+
+        // WAKE_LOCKを開放する
+        lock.release();
     }
 
     @Override
@@ -220,21 +195,5 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                     mProgressFlag = false;  // コールバックセットを指示
                 }
             };
-
-        /**
-         * A placeholder fragment containing a simple view.
-         */
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
-    }
 
 }
