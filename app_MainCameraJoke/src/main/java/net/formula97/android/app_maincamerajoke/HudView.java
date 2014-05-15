@@ -44,6 +44,16 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
 
         Canvas canvas = holder.lockCanvas();
 
+        drawGunMarker(canvas);
+
+        holder.unlockCanvasAndPost(canvas);
+    }
+
+    /**
+     * 画面の中心にガンマーカーを描く。
+     * @param canvas 描画対象のCanvasオブジェクト
+     */
+    private void drawGunMarker(Canvas canvas) {
         // 画面の中心と、画面幅に応じた大きさの円のサイズを算出
         float cx = canvas.getWidth() / 2;
         float cy = canvas.getHeight() / 2;
@@ -55,8 +65,6 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
         drawCircle.setStrokeWidth(3.0f);
         drawCircle.setColor(Color.GREEN);
         canvas.drawCircle(cx, cy, radius, drawCircle);
-
-        holder.unlockCanvasAndPost(canvas);
     }
 
     /**
