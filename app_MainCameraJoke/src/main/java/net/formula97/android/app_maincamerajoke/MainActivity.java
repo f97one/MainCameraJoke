@@ -5,6 +5,7 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v7.app.ActionBarActivity;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -131,7 +132,20 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
         Camera.Size selected = sizeList.get(0);
         parameters.setPreviewSize(selected.width, selected.height);
-        mCamera.setDisplayOrientation(90);  // 縦画面にする
+
+        // 画面の向きに応じて、プレビューの角度を変える
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
+        int rotationDegree = getWindowManager().getDefaultDisplay().getRotation() * 90;
+        int degree;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            degree = (info.orientation + rotationDegree) % 360;
+            degree = (360 - degree) % 360;
+        } else {
+            degree = (info.orientation - rotationDegree + 360) % 360;
+        }
+        mCamera.setDisplayOrientation(degree);
+
         mCamera.startPreview();
 
     }
@@ -195,5 +209,4 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                     mProgressFlag = false;  // コールバックセットを指示
                 }
             };
-
 }
