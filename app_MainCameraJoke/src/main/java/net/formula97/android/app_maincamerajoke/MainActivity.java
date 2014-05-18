@@ -3,6 +3,8 @@ package net.formula97.android.app_maincamerajoke;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.PowerManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Surface;
@@ -13,19 +15,48 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- *
+ * カメラプレビューとガンマーカーを表示するActivity。
+ * @author HAJIME Fukuna
  */
 public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback {
 
+    /**
+     * カメラのインスタンスを保持するフィールド。
+     */
     Camera mCamera;
-    //private CamView camView;
 
+    /**
+     * カメラプレビューを保持するSurfaceViewのフィールド。
+     */
     SurfaceView camPreview;
+    /**
+     * ガンマーカーを保持するSurfaceViewのフィールド。
+     */
     SurfaceView hudView;
-    //private SurfaceHolder holder;
-    private static final String wakeLockTag = "net.formula97.android.app_maincamerajoke.ACTION_SCREEN_KEEP";
+    /**
+     * WAKE_LOCKで使う識別子。
+     */
+    private static final String WAKE_LOCK_TAG = "net.formula97.android.app_maincamerajoke.ACTION_SCREEN_KEEP";
+    /**
+     * WAKE_LOCKのインスタンスを保持するフィールド。
+     */
     PowerManager.WakeLock lock = null;
+    /**
+     * プレビュー画像保存処理が実行中か否かを保持するフラグ。
+     */
     private boolean mProgressFlag = false;
+    /**
+     * プレビュー表示中か否かを格納するフラグ。
+     */
+    private boolean previewEnable = false;
+    /**
+     * フォーカス調整を定期実行するときの実行間隔（単位：ミリ秒）
+     */
+    private static final int FOCUS_REPEAT_INTERVAL = 5 * 1000;
+    /**
+     * Handlerに渡すメッセージコード。
+     */
+    private static final int HANDLER_MESSAGE_CODE = 0x7fff8001;
 
     /**
      * Activity生成時に最初に呼ばれる。
@@ -55,7 +86,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         // WAKE_LOCKの取得準備
         PowerManager powerManager = (PowerManager)getSystemService(POWER_SERVICE);
         lock = powerManager.newWakeLock(
-                PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, wakeLockTag);
+                PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, WAKE_LOCK_TAG);
 
     }
 
@@ -65,12 +96,27 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
 
         // WAKE_LOCKを取得する
         lock.acquire();
+
+        // Handlerの初回実行を定義
+        // この方法だと、フラグをオフ->オンとなった場合、Handlerを再度動かす必要がある
+        sendMessageToHandler();
+    }
+
+    /**
+     * Handlerにメッセージ付きの実行指示を送る。
+     */
+    private void sendMessageToHandler() {
+        Message message = new Message();
+        message.what = HANDLER_MESSAGE_CODE;
+        focusHandler.sendMessageDelayed(message, FOCUS_REPEAT_INTERVAL);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mCamera.stopPreview();
+        previewEnable = false;
+        // このままアプリを終了させるので、Handlerの再定義は行わない。
 
         // WAKE_LOCKを開放する
         lock.release();
@@ -152,7 +198,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         mCamera.setDisplayOrientation(degree);
 
         mCamera.startPreview();
-
+        previewEnable = true;
     }
 
     /**
@@ -180,6 +226,9 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         }
     }
 
+    /**
+     *
+     */
     private final Camera.PreviewCallback editPreviewImage =
             new Camera.PreviewCallback() {
 
@@ -205,13 +254,46 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                     mCamera.setPreviewCallback(null);  // プレビューコールバックを解除
 
                     mCamera.stopPreview();  // プレビュー表示をいったん停止
+                    previewEnable = false;
 
                     // TODO 内蔵ストレージにプレビューを上書きする処理を書く
 
                     // TODO 上書きしたプレビューの「明るさ」要素を分析する処理を書く
 
                     mCamera.startPreview(); // プレビュー表示を再開
+                    previewEnable = true;
+                    sendMessageToHandler();
+
                     mProgressFlag = false;  // コールバックセットを指示
                 }
             };
+
+    /**
+     * オートフォーカスのコールバック。<br />
+     * ここでは、「オートフォーカスでフォーカス調整を行う」ことが目的なので、イベント発生に連動して
+     * なにか処理を行わせる予定はない。
+     */
+    private Camera.AutoFocusCallback mAutoFocusListener = new Camera.AutoFocusCallback() {
+        @Override
+        public void onAutoFocus(boolean success, Camera camera) {
+            // オートフォーカスのイベント発生に連動して、何らかの処理を行う場合
+        }
+    };
+
+    /**
+     * フォーカス調整を定期的に行うHandler。<br />
+     * 内部から同じメッセージコードでHandlerを動かすことで、定期的な実行を実現している。
+     */
+    private Handler focusHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if (previewEnable) {
+                // オートフォーカスを実行
+                mCamera.autoFocus(mAutoFocusListener);
+                // 次回実行を定義
+                focusHandler.sendMessageDelayed(obtainMessage(), FOCUS_REPEAT_INTERVAL);
+            }
+        }
+    };
 }
