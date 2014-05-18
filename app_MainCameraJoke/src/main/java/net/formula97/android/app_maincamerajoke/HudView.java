@@ -58,6 +58,10 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
         float cx = canvas.getWidth() / 2;
         float cy = canvas.getHeight() / 2;
         float radius = canvas.getWidth() / 6;
+        // ガンマーカーの縦方向の長さは、円の半径の1/3にする
+        float gunMarkerLengthY = radius / 3;
+        // ガンマーカーの横方向の長さは、円の半径の1/6にする
+        float gunMarkerLengthX = radius / 6;
 
         // 塗りつぶしなしで中心に円を書く
         Paint drawCircle = new Paint();
@@ -65,6 +69,33 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
         drawCircle.setStrokeWidth(3.0f);
         drawCircle.setColor(Color.GREEN);
         canvas.drawCircle(cx, cy, radius, drawCircle);
+
+        // ガンマーカーを描く
+        // 線種は円のそれと同じ物にする
+        float[] gunMarkerLeftSide = {
+                // １巡目
+                cx, cy,
+                cx - gunMarkerLengthX, cy + gunMarkerLengthY,
+                // ２巡目
+                cx - gunMarkerLengthX, cy + gunMarkerLengthY,
+                cx - (gunMarkerLengthX * 2), cy,
+                // ３巡目
+                cx - (gunMarkerLengthX * 2), cy,
+                cx - (gunMarkerLengthX * 2) - (gunMarkerLengthX / 2), cy
+        };
+        float[] gunMarkerRightSide = {
+                // １巡目
+                cx, cy,
+                cx + gunMarkerLengthX, cy + gunMarkerLengthY,
+                // ２巡目
+                cx + gunMarkerLengthX, cy + gunMarkerLengthY,
+                cx + (gunMarkerLengthX * 2), cy,
+                // ３巡目
+                cx + (gunMarkerLengthX * 2), cy,
+                cx + (gunMarkerLengthX * 2) + (gunMarkerLengthX / 2), cy
+        };
+        canvas.drawLines(gunMarkerLeftSide, drawCircle);
+        canvas.drawLines(gunMarkerRightSide, drawCircle);
     }
 
     /**
