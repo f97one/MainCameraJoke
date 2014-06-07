@@ -60,6 +60,8 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     private static final int HANDLER_MESSAGE_CODE = 0x7fff8001;
 
     private final String savedPreviewFilename = "SavedPreviewForAnalyze.raw";
+    private int previewAreaHeight;
+    private int previewAreaWidth;
 
     /**
      * Activity生成時に最初に呼ばれる。
@@ -190,8 +192,6 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         int viewWidth = camPreview.getWidth();
         int deltaHeight = 65535;
         int deltaWidth = 65535;
-        int prevH = 0;
-        int prevW = 0;
 
         // 選択可能なプレビューサイズリストをカメラから取得
         List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
@@ -213,12 +213,12 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                 if (viewHeight - sizeList.get(i).width < deltaHeight && viewWidth - sizeList.get(i).height < deltaWidth) {
                     deltaHeight = viewHeight - sizeList.get(i).height;
                     deltaWidth = viewWidth - sizeList.get(i).width;
-                    prevH = sizeList.get(i).height;
-                    prevW = sizeList.get(i).width;
+                    previewAreaHeight = sizeList.get(i).height;
+                    previewAreaWidth = sizeList.get(i).width;
                 }
             }
         }
-        parameters.setPreviewSize(prevH, prevW);
+        parameters.setPreviewSize(previewAreaHeight, previewAreaWidth);
 
         // 画面の向きに応じて、プレビューの角度を変える
         Camera.CameraInfo info = new Camera.CameraInfo();
@@ -289,8 +289,8 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                 public void onPreviewFrame(byte[] data, Camera camera) {
                     mCamera.setPreviewCallback(null);  // プレビューコールバックを解除
 
-//                    mCamera.stopPreview();  // プレビュー表示をいったん停止
-//                    previewEnable = false;
+                    mCamera.stopPreview();  // プレビュー表示をいったん停止
+                    previewEnable = false;
 //
 //                    // ストレージにプレビューを上書きするので、ファイル名は決め打ち
 //                    String filepath = Environment.getExternalStorageDirectory().getPath() +
@@ -309,6 +309,10 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
 //                    }
 
                     // TODO 上書きしたプレビューの「明るさ」要素を分析する処理を書く
+                    boolean result = analyzePreviewImage(data);
+                    if (result) {
+                        // ネタを表示する
+                    }
 
                     mCamera.startPreview(); // プレビュー表示を再開
                     previewEnable = true;
@@ -317,6 +321,16 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                     mProgressFlag = false;  // コールバックセットを指示
                 }
             };
+
+    /**
+     * プレビューデータを解析し、ネタ表示可能か否かを返す。
+     * @param data カメラプレビューのbyte列
+     * @return ネタ表示可能な場合はtrue、そうでない場合はfalseを返す
+     */
+    private boolean analyzePreviewImage(byte[] data) {
+
+        return false;
+    }
 
     /**
      * オートフォーカスのコールバック。<br />
