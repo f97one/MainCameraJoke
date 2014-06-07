@@ -2,7 +2,7 @@ apply plugin: 'android'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.3"
+    buildToolsVersion "19.1.0"
 
     defaultConfig {
         minSdkVersion 10
@@ -25,6 +25,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:19.0.+'
+    compile 'com.android.support:appcompat-v7:19.1.+'
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:4.3.1'
 }
