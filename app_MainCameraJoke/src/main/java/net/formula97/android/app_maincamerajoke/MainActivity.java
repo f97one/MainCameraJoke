@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -57,6 +58,8 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      * Handlerに渡すメッセージコード。
      */
     private static final int HANDLER_MESSAGE_CODE = 0x7fff8001;
+
+    private final String savedPreviewFilename = "SavedPreviewForAnalyze.raw";
 
     /**
      * Activity生成時に最初に呼ばれる。
@@ -180,9 +183,42 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         // カメラプレビューを開始する
         Camera.Parameters parameters = mCamera.getParameters();
+
+        // プレビューサイズの選定
+        // まずSurfaceViewのサイズを取得
+        int viewHeight = camPreview.getHeight();
+        int viewWidth = camPreview.getWidth();
+        int deltaHeight = 65535;
+        int deltaWidth = 65535;
+        int prevH = 0;
+        int prevW = 0;
+
+        // 選択可能なプレビューサイズリストをカメラから取得
         List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
-        Camera.Size selected = sizeList.get(0);
-        parameters.setPreviewSize(selected.width, selected.height);
+
+        if (BuildConfig.DEBUG) {
+            Log.d("MainActivity#surfaceChanged", "Supported preview size as follow :");
+            for (int i = 0; i < sizeList.size(); i++) {
+                Log.d("MainActivity#surfaceChanged", "Type " + String.valueOf(i + 1) + " : " +
+                        sizeList.get(i).width + " x " + sizeList.get(i).height);
+            }
+        }
+
+        // 表示可能なプレビューサイズのうち、うちわで一番近いものを選択
+        for (int i = 0; i < sizeList.size(); i++) {
+            if (viewHeight - sizeList.get(i).height < 0 || viewWidth - sizeList.get(i).width < 0) {
+                // SurfaceViewのサイズを超えている場合は無視
+                continue;
+            } else {
+                if (viewHeight - sizeList.get(i).width < deltaHeight && viewWidth - sizeList.get(i).height < deltaWidth) {
+                    deltaHeight = viewHeight - sizeList.get(i).height;
+                    deltaWidth = viewWidth - sizeList.get(i).width;
+                    prevH = sizeList.get(i).height;
+                    prevW = sizeList.get(i).width;
+                }
+            }
+        }
+        parameters.setPreviewSize(prevH, prevW);
 
         // 画面の向きに応じて、プレビューの角度を変える
         Camera.CameraInfo info = new Camera.CameraInfo();
@@ -253,10 +289,24 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                 public void onPreviewFrame(byte[] data, Camera camera) {
                     mCamera.setPreviewCallback(null);  // プレビューコールバックを解除
 
-                    mCamera.stopPreview();  // プレビュー表示をいったん停止
-                    previewEnable = false;
-
-                    // TODO 内蔵ストレージにプレビューを上書きする処理を書く
+//                    mCamera.stopPreview();  // プレビュー表示をいったん停止
+//                    previewEnable = false;
+//
+//                    // ストレージにプレビューを上書きするので、ファイル名は決め打ち
+//                    String filepath = Environment.getExternalStorageDirectory().getPath() +
+//                            "/" + savedPreviewFilename;
+//
+//                    FileOutputStream stream = null;
+//
+//                    try {
+//                        stream = new FileOutputStream(filepath);
+//                        stream.write(data);
+//                        stream.close();
+//                    } catch (FileNotFoundException e) {
+//                        e.printStackTrace();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
 
                     // TODO 上書きしたプレビューの「明るさ」要素を分析する処理を書く
 
