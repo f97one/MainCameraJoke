@@ -1,5 +1,6 @@
 package net.formula97.android.app_maincamerajoke;
 
+import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -199,8 +200,44 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         if (BuildConfig.DEBUG) {
             Log.d("MainActivity#surfaceChanged", "Supported preview size as follow :");
             for (int i = 0; i < sizeList.size(); i++) {
-                Log.d("MainActivity#surfaceChanged", "Type " + String.valueOf(i + 1) + " : " +
+                Log.d("MainActivity#surfaceChanged", "Type index " + String.valueOf(i) + " : " +
                         sizeList.get(i).width + " x " + sizeList.get(i).height);
+            }
+        }
+
+        // カメラがサポートするプレビューフォーマット形式を調査する
+        if (BuildConfig.DEBUG) {
+            List<Integer> formatList = parameters.getSupportedPreviewFormats();
+
+            String supportedFormatName = "";
+            for (Integer elem : formatList) {
+                switch (elem) {
+                    case ImageFormat.JPEG:
+                        supportedFormatName = "JPEG";
+                        break;
+                    case ImageFormat.NV16:
+                        supportedFormatName = "NV16 (YCbCr Video)";
+                        break;
+                    case ImageFormat.NV21:
+                        supportedFormatName = "NV21 (YCrCb Still Picture)";
+                        break;
+                    case ImageFormat.RGB_565:
+                        supportedFormatName = "RGB_565 (RGB Picture)";
+                        break;
+                    case ImageFormat.YUV_420_888:
+                        supportedFormatName = "YUV_420_888 (Multi-plane Android YUV format YCbCr)";
+                        break;
+                    case ImageFormat.YUY2:
+                        supportedFormatName = "YUY2 (YCbCr YUYV Picture)";
+                        break;
+                    case ImageFormat.YV12:
+                        supportedFormatName = "YV12 (Android YUV format)";
+                        break;
+                    case ImageFormat.UNKNOWN:
+                        supportedFormatName = "UNKNOWN";
+                        break;
+                }
+                Log.d("MainActivity#surfaceChanged", "Supported preview format : " + supportedFormatName);
             }
         }
 
@@ -328,6 +365,9 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      * @return ネタ表示可能な場合はtrue、そうでない場合はfalseを返す
      */
     private boolean analyzePreviewImage(byte[] data) {
+        if (BuildConfig.DEBUG) {
+            Log.d("MainActivity#analyzePreviewImage", "preview byte size : " + data.length);
+        }
 
         return false;
     }
@@ -355,6 +395,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
             if (previewEnable) {
                 // オートフォーカスを実行
                 mCamera.autoFocus(mAutoFocusListener);
+//                takePreviewRawData();
                 // 次回実行を定義
                 focusHandler.sendMessageDelayed(obtainMessage(), FOCUS_REPEAT_INTERVAL);
             }
