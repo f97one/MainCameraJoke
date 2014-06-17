@@ -20,7 +20,7 @@ import java.util.List;
  * カメラプレビューとガンマーカーを表示するActivity。
  * @author HAJIME Fukuna
  */
-public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback {
+public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     /**
      * カメラのインスタンスを保持するフィールド。
@@ -63,6 +63,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     private final String savedPreviewFilename = "SavedPreviewForAnalyze.raw";
     private int previewAreaHeight;
     private int previewAreaWidth;
+    private byte[] mFrameBuffer;
 
     /**
      * Activity生成時に最初に呼ばれる。
@@ -166,6 +167,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     public void surfaceCreated(SurfaceHolder holder) {
         try {
             mCamera.setPreviewDisplay(camPreview.getHolder());
+            mCamera.addCallbackBuffer(mFrameBuffer);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -240,6 +242,8 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                 Log.d("MainActivity#surfaceChanged", "Supported preview format : " + supportedFormatName);
             }
         }
+        // プレビューフォーマットをNV21に固定
+        parameters.setPreviewFormat(ImageFormat.NV21);
 
         // 表示可能なプレビューサイズのうち、うちわで一番近いものを選択
         for (int i = 0; i < sizeList.size(); i++) {
@@ -248,14 +252,25 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                 continue;
             } else {
                 if (viewHeight - sizeList.get(i).width < deltaHeight && viewWidth - sizeList.get(i).height < deltaWidth) {
-                    deltaHeight = viewHeight - sizeList.get(i).height;
                     deltaWidth = viewWidth - sizeList.get(i).width;
-                    previewAreaHeight = sizeList.get(i).height;
+                    deltaHeight = viewHeight - sizeList.get(i).height;
                     previewAreaWidth = sizeList.get(i).width;
+                    previewAreaHeight = sizeList.get(i).height;
                 }
             }
         }
-        parameters.setPreviewSize(previewAreaHeight, previewAreaWidth);
+        if (BuildConfig.DEBUG) {
+            Log.d("MainActivity#surfaceChanged", "Preview width : " + String.valueOf(previewAreaWidth));
+            Log.d("MainActivity#surfaceChanged", "Preview height : " + String.valueOf(previewAreaHeight));
+        }
+        parameters.setPreviewSize(previewAreaWidth, previewAreaHeight);
+
+        // フレームバッファの計算
+        int frameBufferSize = previewAreaWidth * previewAreaHeight * ImageFormat.getBitsPerPixel(parameters.getPreviewFormat()) / 8;
+        if (BuildConfig.DEBUG) {
+            Log.d("MainActivity#surfaceChanged", "Frame buffer size = " + String.valueOf(frameBufferSize));
+        }
+        mFrameBuffer = new byte[frameBufferSize];
 
         // 画面の向きに応じて、プレビューの角度を変える
         Camera.CameraInfo info = new Camera.CameraInfo();
@@ -270,7 +285,11 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         }
         mCamera.setDisplayOrientation(degree);
 
+        mCamera.setParameters(parameters);
+
+        mCamera.setPreviewCallbackWithBuffer(this);
         mCamera.startPreview();
+        mCamera.addCallbackBuffer(mFrameBuffer);
         previewEnable = true;
     }
 
@@ -285,79 +304,8 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-
+//        mCamera.setPreviewCallbackWithBuffer(null);
     }
-
-    /**
-     * プレビュー表示をキャプチャーするためのコールバックをセットする。
-     */
-    public void takePreviewRawData() {
-        if (!mProgressFlag) {
-            mProgressFlag = true;
-            mCamera.setPreviewCallback(editPreviewImage);
-            //プレビューコールバックをセット
-        }
-    }
-
-    /**
-     *
-     */
-    private final Camera.PreviewCallback editPreviewImage =
-            new Camera.PreviewCallback() {
-
-                /**
-                 * Called as preview frames are displayed.  This callback is invoked
-                 * on the event thread {@link #open(int)} was called from.
-                 * <p/>
-                 * <p>If using the {@link android.graphics.ImageFormat#YV12} format,
-                 * refer to the equations in {@link android.hardware.Camera.Parameters#setPreviewFormat}
-                 * for the arrangement of the pixel data in the preview callback
-                 * buffers.
-                 *
-                 * @param data   the contents of the preview frame in the format defined
-                 *               by {@link android.graphics.ImageFormat}, which can be queried
-                 *               with {@link android.hardware.Camera.Parameters#getPreviewFormat()}.
-                 *               If {@link android.hardware.Camera.Parameters#setPreviewFormat(int)}
-                 *               is never called, the default will be the YCbCr_420_SP
-                 *               (NV21) format.
-                 * @param camera the Camera service object.
-                 */
-                @Override
-                public void onPreviewFrame(byte[] data, Camera camera) {
-                    mCamera.setPreviewCallback(null);  // プレビューコールバックを解除
-
-                    mCamera.stopPreview();  // プレビュー表示をいったん停止
-                    previewEnable = false;
-//
-//                    // ストレージにプレビューを上書きするので、ファイル名は決め打ち
-//                    String filepath = Environment.getExternalStorageDirectory().getPath() +
-//                            "/" + savedPreviewFilename;
-//
-//                    FileOutputStream stream = null;
-//
-//                    try {
-//                        stream = new FileOutputStream(filepath);
-//                        stream.write(data);
-//                        stream.close();
-//                    } catch (FileNotFoundException e) {
-//                        e.printStackTrace();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-
-                    // TODO 上書きしたプレビューの「明るさ」要素を分析する処理を書く
-                    boolean result = analyzePreviewImage(data);
-                    if (result) {
-                        // ネタを表示する
-                    }
-
-                    mCamera.startPreview(); // プレビュー表示を再開
-                    previewEnable = true;
-                    sendMessageToHandler();
-
-                    mProgressFlag = false;  // コールバックセットを指示
-                }
-            };
 
     /**
      * プレビューデータを解析し、ネタ表示可能か否かを返す。
@@ -368,8 +316,30 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         if (BuildConfig.DEBUG) {
             Log.d("MainActivity#analyzePreviewImage", "preview byte size : " + data.length);
         }
+        // サンプリングポイント、以下はVGAサイズにおける中心付近をベタに計算したもの
+        // TODO プレビューサイズに応じて中心付近を適宜算出する処理を描く
+        int[] samplingPoints = {
+                138000,
+                153328,
+                153360,
+                153392,
+                168720
+        };
+        int sample = 0;
+        for (int i = 0; i < samplingPoints.length; i++) {
+            sample += data[samplingPoints[i]];
+        }
+        float avg = sample / samplingPoints.length;
 
-        return false;
+        if (BuildConfig.DEBUG) {
+            Log.d("MainActivity#analyzePreviewImage", "sampling data average = " + avg);
+        }
+        boolean ret = false;
+        if (avg < 10 || avg > -10) {
+            ret = true;
+        }
+
+        return ret;
     }
 
     /**
@@ -401,4 +371,24 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
             }
         }
     };
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        // 念のためPreviewCallbackを解除
+        mCamera.setPreviewCallbackWithBuffer(null);
+//        mCamera.addCallbackBuffer(null);
+        mCamera.stopPreview();  // プレビュー表示をいったん停止
+        previewEnable = false;
+
+        boolean result = analyzePreviewImage(data);
+        if (result) {
+            // ネタを表示する
+        }
+
+        mCamera.startPreview(); // プレビュー表示を再開
+        mCamera.setPreviewCallbackWithBuffer(this);
+        mCamera.addCallbackBuffer(mFrameBuffer);
+        previewEnable = true;
+
+    }
 }
