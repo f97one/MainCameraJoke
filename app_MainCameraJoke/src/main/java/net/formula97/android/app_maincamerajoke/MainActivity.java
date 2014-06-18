@@ -12,21 +12,36 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
 /**
  * カメラプレビューとガンマーカーを表示するActivity。
+ *
  * @author HAJIME Fukuna
  */
 public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     /**
+     * WAKE_LOCKで使う識別子。
+     */
+    private static final String WAKE_LOCK_TAG = "net.formula97.android.app_maincamerajoke.ACTION_SCREEN_KEEP";
+    /**
+     * フォーカス調整を定期実行するときの実行間隔（単位：ミリ秒）
+     */
+    private static final int FOCUS_REPEAT_INTERVAL = 5 * 1000;
+    /**
+     * Handlerに渡すメッセージコード。
+     */
+    private static final int HANDLER_MESSAGE_CODE = 0x7fff8001;
+    private final String savedPreviewFilename = "SavedPreviewForAnalyze.raw";
+    /**
      * カメラのインスタンスを保持するフィールド。
      */
     Camera mCamera;
-
     /**
      * カメラプレビューを保持するSurfaceViewのフィールド。
      */
@@ -35,10 +50,6 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      * ガンマーカーを保持するSurfaceViewのフィールド。
      */
     SurfaceView hudView;
-    /**
-     * WAKE_LOCKで使う識別子。
-     */
-    private static final String WAKE_LOCK_TAG = "net.formula97.android.app_maincamerajoke.ACTION_SCREEN_KEEP";
     /**
      * WAKE_LOCKのインスタンスを保持するフィールド。
      */
@@ -51,22 +62,54 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      * プレビュー表示中か否かを格納するフラグ。
      */
     private boolean previewEnable = false;
-    /**
-     * フォーカス調整を定期実行するときの実行間隔（単位：ミリ秒）
-     */
-    private static final int FOCUS_REPEAT_INTERVAL = 5 * 1000;
-    /**
-     * Handlerに渡すメッセージコード。
-     */
-    private static final int HANDLER_MESSAGE_CODE = 0x7fff8001;
-
-    private final String savedPreviewFilename = "SavedPreviewForAnalyze.raw";
     private int previewAreaHeight;
     private int previewAreaWidth;
     private byte[] mFrameBuffer;
+    private int offset = 32;
+    /**
+     * オートフォーカスのコールバック。<br />
+     * ここでは、「オートフォーカスでフォーカス調整を行う」ことが目的なので、イベント発生に連動して
+     * なにか処理を行わせる予定はない。
+     */
+    private Camera.AutoFocusCallback mAutoFocusListener = new Camera.AutoFocusCallback() {
+        @Override
+        public void onAutoFocus(boolean success, Camera camera) {
+            // オートフォーカスのイベント発生に連動して、何らかの処理を行う場合
+        }
+    };
+    /**
+     * フォーカス調整を定期的に行うHandler。<br />
+     * 内部から同じメッセージコードでHandlerを動かすことで、定期的な実行を実現している。
+     */
+    private Handler focusHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if (previewEnable) {
+                // オートフォーカスを実行
+                mCamera.autoFocus(mAutoFocusListener);
+//                takePreviewRawData();
+                // 次回実行を定義
+                focusHandler.sendMessageDelayed(obtainMessage(), FOCUS_REPEAT_INTERVAL);
+            }
+        }
+    };
+    private boolean alreadyPost = false;
+    private Runnable run = new Runnable() {
+        @Override
+        public void run() {
+            String[] neta = getResources().getStringArray(R.array.neta_message);
+            Random r = new Random();
+            int index = r.nextInt(neta.length);
+
+            Toast.makeText(MainActivity.this, neta[index], Toast.LENGTH_LONG).show();
+            alreadyPost = false;
+        }
+    };
 
     /**
      * Activity生成時に最初に呼ばれる。
+     *
      * @param savedInstanceState 保存されたBundleオブジェクト。
      */
     @SuppressWarnings("deprecation")
@@ -77,7 +120,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
 
         // オーバーレイ表示
         HudView hudViewCallback = new HudView(getApplicationContext());
-        hudView = (SurfaceView)findViewById(R.id.hudDrawView);
+        hudView = (SurfaceView) findViewById(R.id.hudDrawView);
         hudView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         hudView.getHolder().addCallback(hudViewCallback);
 
@@ -91,7 +134,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         mCamera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
 
         // WAKE_LOCKの取得準備
-        PowerManager powerManager = (PowerManager)getSystemService(POWER_SERVICE);
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         lock = powerManager.newWakeLock(
                 PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, WAKE_LOCK_TAG);
 
@@ -137,6 +180,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
 
     /**
      * 安全にカメラを開く。
+     *
      * @param camId システムに登録されているカメラの向きを表すID
      * @return 開くことができたCameraオブジェクト
      */
@@ -309,6 +353,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
 
     /**
      * プレビューデータを解析し、ネタ表示可能か否かを返す。
+     *
      * @param data カメラプレビューのbyte列
      * @return ネタ表示可能な場合はtrue、そうでない場合はfalseを返す
      */
@@ -316,14 +361,25 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         if (BuildConfig.DEBUG) {
             Log.d("MainActivity#analyzePreviewImage", "preview byte size : " + data.length);
         }
-        // サンプリングポイント、以下はVGAサイズにおける中心付近をベタに計算したもの
-        // TODO プレビューサイズに応じて中心付近を適宜算出する処理を描く
+        // サンプリングポイントは、プレビューサイズに応じて中心付近を適宜算出する
+
+        // 中心点
+        int center = (previewAreaHeight / 2) * previewAreaWidth - (previewAreaWidth / 2);
+        // 左
+        int lw = center - offset;
+        // 右
+        int rw = center + offset;
+        // 上
+        int above = (previewAreaHeight / 2 - offset) * previewAreaWidth - (previewAreaWidth / 2);
+        // 下
+        int below = (previewAreaHeight / 2 + offset) * previewAreaWidth - (previewAreaWidth / 2);
+
         int[] samplingPoints = {
-                138000,
-                153328,
-                153360,
-                153392,
-                168720
+                above,
+                lw,
+                center,
+                rw,
+                below
         };
         int sample = 0;
         for (int i = 0; i < samplingPoints.length; i++) {
@@ -342,36 +398,6 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         return ret;
     }
 
-    /**
-     * オートフォーカスのコールバック。<br />
-     * ここでは、「オートフォーカスでフォーカス調整を行う」ことが目的なので、イベント発生に連動して
-     * なにか処理を行わせる予定はない。
-     */
-    private Camera.AutoFocusCallback mAutoFocusListener = new Camera.AutoFocusCallback() {
-        @Override
-        public void onAutoFocus(boolean success, Camera camera) {
-            // オートフォーカスのイベント発生に連動して、何らかの処理を行う場合
-        }
-    };
-
-    /**
-     * フォーカス調整を定期的に行うHandler。<br />
-     * 内部から同じメッセージコードでHandlerを動かすことで、定期的な実行を実現している。
-     */
-    private Handler focusHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if (previewEnable) {
-                // オートフォーカスを実行
-                mCamera.autoFocus(mAutoFocusListener);
-//                takePreviewRawData();
-                // 次回実行を定義
-                focusHandler.sendMessageDelayed(obtainMessage(), FOCUS_REPEAT_INTERVAL);
-            }
-        }
-    };
-
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
         // 念のためPreviewCallbackを解除
@@ -380,9 +406,17 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         mCamera.stopPreview();  // プレビュー表示をいったん停止
         previewEnable = false;
 
+        Handler handler = new Handler();
         boolean result = analyzePreviewImage(data);
         if (result) {
-            // ネタを表示する
+            if (!alreadyPost) {
+                alreadyPost = true;
+
+                // ネタを表示する
+                handler.postDelayed(run, 10 * 1000);
+            }
+        } else {
+            handler.removeCallbacks(run);
         }
 
         mCamera.startPreview(); // プレビュー表示を再開
