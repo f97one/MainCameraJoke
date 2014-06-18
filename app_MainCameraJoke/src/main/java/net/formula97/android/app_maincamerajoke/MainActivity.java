@@ -391,7 +391,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
             Log.d("MainActivity#analyzePreviewImage", "sampling data average = " + avg);
         }
         boolean ret = false;
-        if (avg < 10 || avg > -10) {
+        if (avg < 10 && avg > -10) {
             ret = true;
         }
 
