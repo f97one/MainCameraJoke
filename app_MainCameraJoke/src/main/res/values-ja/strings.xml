@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Main Camera is normal</string>
+    <string name="action_settings">設定</string>
+    <string name="hello_world">hello world</string>
+
+    <string name="neta_001">まだだ、たかがメインカメラをやられただけだ！</string>
+    <string name="neta_002">この力を使うのに、いちいち三万円もするカメラをぶっ叩いて壊さなければならんがなッ！</string>
+    <string name="neta_003">目が、目がぁぁぁぁ！</string>
+
+</resources>

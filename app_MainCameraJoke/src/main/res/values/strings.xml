@@ -2,11 +2,11 @@
 <resources>
 
     <string name="app_name">Main Camera is normal</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="hello_world">hello world</string>
 
     <string name="neta_001">Not yet, I only suffered damage to the main camera mere!</string>
-    <string name="neta_002">Every time I use this ability, I must destroy the camera to be ¥ 30,000 by hitting violently!</string>
+    <string name="neta_002">Every time I use this ability, I must destroy the camera to be JPY 30,000- by hitting violently!</string>
     <string name="neta_003">My eyes... is burning!!!</string>
 
 
