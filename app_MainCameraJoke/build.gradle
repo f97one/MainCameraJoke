@@ -1,16 +1,25 @@
 apply plugin: 'android'
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file(System.getenv("DEBUG_KEYSTORE"))
+        }
+        release {
+            keyAlias System.getenv("RELEASE_KEY_ALIAS")
+            keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+            storeFile file(System.getenv("RELEASE_KEYSTORE"))
+            storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
+        }
+    }
     compileSdkVersion 19
-    buildToolsVersion "19.1.0"
-
+    buildToolsVersion '19.1.0'
     defaultConfig {
         minSdkVersion 10
         targetSdkVersion 19
         versionCode 1
-        versionName "1.0"
+        versionName '1.0'
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
@@ -20,7 +29,11 @@ android {
             debuggable false
             runProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            jniDebugBuild false
+            signingConfig signingConfigs.release
         }
+    }
+    productFlavors {
     }
 }
 
