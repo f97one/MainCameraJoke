@@ -27,6 +27,10 @@ public class NetaMessages {
     @DatabaseField(defaultValue = "true")
     private boolean userDefined;
 
+    public NetaMessages() {
+
+    }
+
     public Integer get_id() {
         return _id;
     }
