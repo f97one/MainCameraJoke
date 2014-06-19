@@ -27,8 +27,33 @@ public class NetaMessages {
     @DatabaseField(defaultValue = "true")
     private boolean userDefined;
 
+    /**
+     * コンストラクタ。<br />
+     * OrmLiteの動作に必要。
+     */
     public NetaMessages() {
 
+    }
+
+    /**
+     * ユーザーによるメッセージ本文とみなすコンストラクタ。
+     *
+     * @param messageBody 登録したいメッセージ本文
+     */
+    public NetaMessages(String messageBody) {
+        setMessageBody(messageBody);
+        setUserDefined(true);
+    }
+
+    /**
+     * メッセージ登録者がユーザーか否かを明示したい場合に使用するコンストラクタ。
+     *
+     * @param messageBody 登録したいメッセージ本文
+     * @param userDefined ユーザーによる登録とする場合はtrue、システムによる登録とする場合はfalse
+     */
+    public NetaMessages(String messageBody, boolean userDefined) {
+        setMessageBody(messageBody);
+        setUserDefined(userDefined);
     }
 
     public Integer get_id() {
@@ -41,10 +66,6 @@ public class NetaMessages {
 
     public boolean isUserDefined() {
         return userDefined;
-    }
-
-    public void set_id(Integer _id) {
-        this._id = _id;
     }
 
     public void setMessageBody(String messageBody) {
