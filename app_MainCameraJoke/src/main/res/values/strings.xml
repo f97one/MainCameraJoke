@@ -4,6 +4,7 @@
     <string name="app_name">Main Camera is normal</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">hello world</string>
+    <string name="open_helper_classname">net.formula97.android.app_maincamerajoke.DatabaseHelper</string>
 
     <string name="neta_001">Not yet, I only suffered damage to the main camera mere!</string>
     <string name="neta_002">Every time I use this ability, I must destroy the camera to be JPY 30,000- by hitting violently!</string>
