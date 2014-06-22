@@ -5,6 +5,9 @@
     <string name="action_settings">設定</string>
     <string name="hello_world">hello world</string>
     <string name="open_helper_classname">net.formula97.android.app_maincamerajoke.DatabaseHelper</string>
+    <string name="add_neta">表示メッセージを追加</string>
+    <string name="specify_here">表示したいメッセージを入力してください。</string>
+    <string name="add">追加</string>
 
     <string name="neta_001">まだだ、たかがメインカメラをやられただけだ！</string>
     <string name="neta_002">この力を使うのに、いちいち三万円もするカメラをぶっ叩いて壊さなければならんがなッ！</string>
