@@ -14,6 +14,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
@@ -37,7 +40,6 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      * Handlerに渡すメッセージコード。
      */
     private static final int HANDLER_MESSAGE_CODE = 0x7fff8001;
-    private final String savedPreviewFilename = "SavedPreviewForAnalyze.raw";
     /**
      * カメラのインスタンスを保持するフィールド。
      */
@@ -55,10 +57,6 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      */
     PowerManager.WakeLock lock = null;
     /**
-     * プレビュー画像保存処理が実行中か否かを保持するフラグ。
-     */
-    private boolean mProgressFlag = false;
-    /**
      * プレビュー表示中か否かを格納するフラグ。
      */
     private boolean previewEnable = false;
@@ -66,6 +64,9 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     private int previewAreaWidth;
     private byte[] mFrameBuffer;
     private int offset = 32;
+    Handler handler;
+    private boolean netaPostOk = false;
+
     /**
      * オートフォーカスのコールバック。<br />
      * ここでは、「オートフォーカスでフォーカス調整を行う」ことが目的なので、イベント発生に連動して
@@ -98,12 +99,14 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     private Runnable run = new Runnable() {
         @Override
         public void run() {
-            String[] neta = getResources().getStringArray(R.array.neta_message);
-            Random r = new Random();
-            int index = r.nextInt(neta.length);
+            if (netaPostOk) {
+                String[] neta = getResources().getStringArray(R.array.neta_message);
+                Random r = new Random();
+                int index = r.nextInt(neta.length);
 
-            Toast.makeText(MainActivity.this, neta[index], Toast.LENGTH_LONG).show();
-            alreadyPost = false;
+                Toast.makeText(MainActivity.this, neta[index], Toast.LENGTH_LONG).show();
+                alreadyPost = false;
+            }
         }
     };
 
@@ -117,6 +120,22 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        handler = new Handler();
+
+        // WAKE_LOCKの取得準備
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        lock = powerManager.newWakeLock(
+                PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, WAKE_LOCK_TAG);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // WAKE_LOCKを取得する
+        lock.acquire();
 
         // オーバーレイ表示
         HudView hudViewCallback = new HudView(getApplicationContext());
@@ -133,23 +152,15 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         // SurfaceViewにプレビューをセットする
         mCamera = safeCamOpen(Camera.CameraInfo.CAMERA_FACING_BACK);
 
-        // WAKE_LOCKの取得準備
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        lock = powerManager.newWakeLock(
-                PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, WAKE_LOCK_TAG);
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        // WAKE_LOCKを取得する
-        lock.acquire();
-
         // Handlerの初回実行を定義
         // この方法だと、フラグをオフ->オンとなった場合、Handlerを再度動かす必要がある
         sendMessageToHandler();
+
+        // AdMobのロード
+        AdView adView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
     }
 
     /**
@@ -290,16 +301,16 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         parameters.setPreviewFormat(ImageFormat.NV21);
 
         // 表示可能なプレビューサイズのうち、うちわで一番近いものを選択
-        for (int i = 0; i < sizeList.size(); i++) {
-            if (viewHeight - sizeList.get(i).height < 0 || viewWidth - sizeList.get(i).width < 0) {
+        for (Camera.Size aSizeList : sizeList) {
+            if (viewHeight - aSizeList.height < 0 || viewWidth - aSizeList.width < 0) {
                 // SurfaceViewのサイズを超えている場合は無視
                 continue;
             } else {
-                if (viewHeight - sizeList.get(i).width < deltaHeight && viewWidth - sizeList.get(i).height < deltaWidth) {
-                    deltaWidth = viewWidth - sizeList.get(i).width;
-                    deltaHeight = viewHeight - sizeList.get(i).height;
-                    previewAreaWidth = sizeList.get(i).width;
-                    previewAreaHeight = sizeList.get(i).height;
+                if (viewHeight - aSizeList.width < deltaHeight && viewWidth - aSizeList.height < deltaWidth) {
+                    deltaWidth = viewWidth - aSizeList.width;
+                    deltaHeight = viewHeight - aSizeList.height;
+                    previewAreaWidth = aSizeList.width;
+                    previewAreaHeight = aSizeList.height;
                 }
             }
         }
@@ -358,9 +369,6 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      * @return ネタ表示可能な場合はtrue、そうでない場合はfalseを返す
      */
     private boolean analyzePreviewImage(byte[] data) {
-        if (BuildConfig.DEBUG) {
-            Log.d("MainActivity#analyzePreviewImage", "preview byte size : " + data.length);
-        }
         // サンプリングポイントは、プレビューサイズに応じて中心付近を適宜算出する
 
         // 中心点
@@ -382,14 +390,11 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                 below
         };
         int sample = 0;
-        for (int i = 0; i < samplingPoints.length; i++) {
-            sample += data[samplingPoints[i]];
+        for (int samplingPoint : samplingPoints) {
+            sample += data[samplingPoint];
         }
         float avg = sample / samplingPoints.length;
 
-        if (BuildConfig.DEBUG) {
-            Log.d("MainActivity#analyzePreviewImage", "sampling data average = " + avg);
-        }
         boolean ret = false;
         if (avg < 10 && avg > -10) {
             ret = true;
@@ -402,21 +407,29 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     public void onPreviewFrame(byte[] data, Camera camera) {
         // 念のためPreviewCallbackを解除
         mCamera.setPreviewCallbackWithBuffer(null);
-//        mCamera.addCallbackBuffer(null);
         mCamera.stopPreview();  // プレビュー表示をいったん停止
         previewEnable = false;
 
-        Handler handler = new Handler();
-        boolean result = analyzePreviewImage(data);
-        if (result) {
+        netaPostOk = analyzePreviewImage(data);
+        if (netaPostOk) {
+            if (BuildConfig.DEBUG) {
+                Log.i("MainActivity#onPreviewFrame", "NETA post OK");
+            }
             if (!alreadyPost) {
                 alreadyPost = true;
 
                 // ネタを表示する
-                handler.postDelayed(run, 10 * 1000);
+                if (BuildConfig.DEBUG) {
+                    Log.i("MainActivity#onPreviewFrame", "posted with handler.");
+                }
+                handler.postDelayed(run, 3 * 1000);
             }
         } else {
+            if (BuildConfig.DEBUG) {
+                Log.i("MainActivity#onPreviewFrame", "NETA post NG");
+            }
             handler.removeCallbacks(run);
+            alreadyPost = false;
         }
 
         mCamera.startPreview(); // プレビュー表示を再開
