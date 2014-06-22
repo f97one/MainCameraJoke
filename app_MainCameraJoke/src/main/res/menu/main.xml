@@ -4,7 +4,7 @@
     tools:ctx="net.formula97.android.app_maincamerajoke.MainActivity" >
     
     <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
+        android:title="@string/add_neta"
         android:orderInCategory="100"
         app:showAsAction="never" />
 </menu>
