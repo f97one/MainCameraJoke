@@ -9,6 +9,9 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -186,6 +189,22 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     protected void onDestroy() {
         super.onDestroy();
         releaseCam();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        AddNetaDialogFragment fragment = new AddNetaDialogFragment();
+        fragment.show(getSupportFragmentManager(), "AddNeta");
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void releaseCam() {

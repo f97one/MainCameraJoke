@@ -38,9 +38,10 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:19.1.+'
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:4.3.1'
+    compile 'com.android.support:appcompat-v7:19.1.+'
     compile 'com.j256.ormlite:ormlite-core:4.48'
     compile 'com.j256.ormlite:ormlite-android:4.48'
     compile 'com.google.android.gms:play-services:4.4.52'
+    compile 'com.android.support:support-v4:19.+'
 }
