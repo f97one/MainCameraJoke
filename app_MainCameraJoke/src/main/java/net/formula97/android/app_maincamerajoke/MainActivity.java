@@ -175,8 +175,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     @Override
     protected void onPause() {
         super.onPause();
-        mCamera.stopPreview();
-        previewEnable = false;
+        releaseCam();
         // このままアプリを終了させるので、Handlerの再定義は行わない。
 
         // WAKE_LOCKを開放する
@@ -186,7 +185,18 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mCamera.release();
+        releaseCam();
+    }
+
+    private void releaseCam() {
+        if (mCamera != null) {
+            mCamera.stopPreview();
+            previewEnable = false;
+            handler.removeCallbacks(run);
+            alreadyPost = false;
+            mCamera.release();
+            mCamera = null;
+        }
     }
 
     /**
@@ -422,7 +432,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
                 if (BuildConfig.DEBUG) {
                     Log.i("MainActivity#onPreviewFrame", "posted with handler.");
                 }
-                handler.postDelayed(run, 3 * 1000);
+                handler.postDelayed(run, 10 * 1000);
             }
         } else {
             if (BuildConfig.DEBUG) {
