@@ -4,14 +4,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
+import java.util.EventListener;
 
 
 /**
@@ -26,9 +24,22 @@ import android.view.ViewGroup;
 public class AddNetaDialogFragment extends DialogFragment {
 
     private MainActivity activity;
+    private OnDialogClosedCallback callback = null;
+
+    public interface OnDialogClosedCallback extends EventListener {
+        public void onDialogClosed(boolean isPositive);
+    }
 
     public AddNetaDialogFragment() {
         // Required empty public constructor
+    }
+
+    public void addCallback(OnDialogClosedCallback callback) {
+        this.callback = callback;
+    }
+
+    public void removeCallback() {
+        this.callback = null;
     }
 
     @Override
@@ -55,12 +66,22 @@ public class AddNetaDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // 特に何もしない。
+
+                if (callback != null) {
+                    // ダイアログを閉じたことを通知する
+                    callback.onDialogClosed(false);
+                }
             }
         });
         builder.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // TODO DBに追加する処理を書く
+
+                if (callback != null) {
+                    // ダイアログを閉じたことを通知する
+                    callback.onDialogClosed(true);
+                }
             }
         });
 

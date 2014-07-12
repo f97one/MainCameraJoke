@@ -29,7 +29,7 @@ import java.util.Random;
  *
  * @author HAJIME Fukuna
  */
-public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback, Camera.PreviewCallback {
+public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback, Camera.PreviewCallback, AddNetaDialogFragment.OnDialogClosedCallback {
 
     /**
      * WAKE_LOCKで使う識別子。
@@ -69,6 +69,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     private int offset = 32;
     Handler handler;
     private boolean netaPostOk = false;
+    private boolean enableAnalyze = true;
 
     /**
      * オートフォーカスのコールバック。<br />
@@ -130,6 +131,8 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         lock = powerManager.newWakeLock(
                 PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, WAKE_LOCK_TAG);
+
+        // Dialogを閉じた時のリスナーをセットする
 
     }
 
@@ -194,6 +197,9 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
+
+        enableAnalyze = false;
+
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
         return true;
@@ -202,6 +208,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         AddNetaDialogFragment fragment = new AddNetaDialogFragment();
+        fragment.addCallback(this);
         fragment.show(getSupportFragmentManager(), "AddNeta");
 
         return super.onOptionsItemSelected(item);
@@ -411,6 +418,11 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
         // 下
         int below = (previewAreaHeight / 2 + offset) * previewAreaWidth - (previewAreaWidth / 2);
 
+        // プレビューバッファが解析点の最後尾を割り込んでいる場合は、表示不可能を返す
+        if (data.length <= below) {
+            return false;
+        }
+
         int[] samplingPoints = {
                 above,
                 lw,
@@ -434,37 +446,45 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        // 念のためPreviewCallbackを解除
-        mCamera.setPreviewCallbackWithBuffer(null);
-        mCamera.stopPreview();  // プレビュー表示をいったん停止
-        previewEnable = false;
+        if (enableAnalyze) {
+            // 念のためPreviewCallbackを解除
+            mCamera.setPreviewCallbackWithBuffer(null);
+            mCamera.stopPreview();  // プレビュー表示をいったん停止
+            previewEnable = false;
 
-        netaPostOk = analyzePreviewImage(data);
-        if (netaPostOk) {
-            if (BuildConfig.DEBUG) {
-                Log.i("MainActivity#onPreviewFrame", "NETA post OK");
-            }
-            if (!alreadyPost) {
-                alreadyPost = true;
-
-                // ネタを表示する
+            netaPostOk = analyzePreviewImage(data);
+            if (netaPostOk) {
                 if (BuildConfig.DEBUG) {
-                    Log.i("MainActivity#onPreviewFrame", "posted with handler.");
+                    Log.i("MainActivity#onPreviewFrame", "NETA post OK");
                 }
-                handler.postDelayed(run, 10 * 1000);
+                if (!alreadyPost) {
+                    alreadyPost = true;
+
+                    // ネタを表示する
+                    if (BuildConfig.DEBUG) {
+                        Log.i("MainActivity#onPreviewFrame", "posted with handler.");
+                    }
+                    handler.postDelayed(run, 10 * 1000);
+                }
+            } else {
+                if (BuildConfig.DEBUG) {
+                    Log.i("MainActivity#onPreviewFrame", "NETA post NG");
+                }
+                handler.removeCallbacks(run);
+                alreadyPost = false;
             }
-        } else {
-            if (BuildConfig.DEBUG) {
-                Log.i("MainActivity#onPreviewFrame", "NETA post NG");
-            }
-            handler.removeCallbacks(run);
-            alreadyPost = false;
+
+            mCamera.startPreview(); // プレビュー表示を再開
+            mCamera.setPreviewCallbackWithBuffer(this);
+            mCamera.addCallbackBuffer(mFrameBuffer);
+            previewEnable = true;
         }
 
-        mCamera.startPreview(); // プレビュー表示を再開
-        mCamera.setPreviewCallbackWithBuffer(this);
-        mCamera.addCallbackBuffer(mFrameBuffer);
-        previewEnable = true;
+    }
 
+    @Override
+    public void onDialogClosed(boolean isPositive) {
+        enableAnalyze = true;
+        mCamera.addCallbackBuffer(mFrameBuffer);
     }
 }
