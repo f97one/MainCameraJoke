@@ -21,6 +21,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -139,6 +141,31 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     @Override
     protected void onResume() {
         super.onResume();
+
+        // DBにネタデータがあるかを検索
+        NetaMessagesModel model = new NetaMessagesModel(this);
+//        NetaMessages message = new NetaMessages();
+        List<NetaMessages> messages = new ArrayList<NetaMessages>();
+        try {
+            messages = (List<NetaMessages>) model.findAll(new NetaMessages());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (messages.size() == 0) {
+            List<NetaMessages> sysAdd = new ArrayList<NetaMessages>();
+            String[] neta = getResources().getStringArray(R.array.neta_message);
+
+            for (String netaStr : neta) {
+                NetaMessages netaMessages = new NetaMessages(netaStr, false);
+
+                try {
+                    model.save(netaMessages);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
 
         // WAKE_LOCKを取得する
         lock.acquire();

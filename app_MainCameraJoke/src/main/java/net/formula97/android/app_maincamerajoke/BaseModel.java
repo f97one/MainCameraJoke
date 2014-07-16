@@ -7,7 +7,6 @@ import com.j256.ormlite.dao.Dao;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by HAJIME on 2014/06/22.
@@ -55,27 +54,34 @@ public class BaseModel {
      * @param entity データベースに登録したいエンティティ
      * @throws SQLException
      */
-    public <T> void save(Object entity) throws SQLException {
+    public <T> void save(T entity) throws SQLException {
         DatabaseHelper helper = getHelper();
 
-        Dao<Object, Integer> dao = helper.getDao(Object.class);
+        Dao<T, Integer> dao = helper.getDao((Class<T>) entity.getClass());
         dao.createOrUpdate(entity);
     }
 
-    public <T> void save(List<Object> entities) throws SQLException {
+    public <T> void save(List<?> entities) throws SQLException {
         DatabaseHelper helper = getHelper();
 
-        Dao<Object, Integer> dao = helper.getDao(Object.class);
+        Dao<T, Integer> dao = helper.getDao((Class<T>) entities.get(0).getClass());
 
         for (Object entity : entities) {
-            dao.createOrUpdate(entity);
+            dao.createOrUpdate((T) entity);
         }
     }
 
-    public <T> List<Object> findAll() throws SQLException {
+    public <T> int delete(T entity) throws SQLException {
         DatabaseHelper helper = getHelper();
 
-        Dao<Object, Integer> dao = helper.getDao(Object.class);
+        Dao<T, Integer> dao = helper.getDao((Class<T>) entity.getClass());
+        return dao.delete(entity);
+    }
+
+    public <T> List<?> findAll(T entity) throws SQLException {
+        DatabaseHelper helper = getHelper();
+
+        Dao<T, Integer> dao = helper.getDao((Class<T>) entity.getClass());
 
         return dao.queryForAll();
     }
