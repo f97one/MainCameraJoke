@@ -13,5 +13,6 @@
     <string name="neta_003">My eyes... is burning!!!</string>
     <string name="title_activity_neta_config">NetaConfigActivity</string>
     <string name="neta_config">Message Setting</string>
+    <string name="neta_config_inst">Click to edit stored message.</string>
 
 </resources>
