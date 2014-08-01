@@ -239,7 +239,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
             case R.id.action_settings:
                 // ネタ文言追加Dialogの表示
                 AddNetaDialogFragment fragment = new AddNetaDialogFragment();
-                fragment.addCallback(this);
+//                fragment.addCallback(this);
                 fragment.show(getSupportFragmentManager(), "AddNeta");
                 break;
             case R.id.message_setting:

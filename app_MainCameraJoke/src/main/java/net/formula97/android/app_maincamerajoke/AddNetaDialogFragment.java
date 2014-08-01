@@ -49,7 +49,9 @@ public class AddNetaDialogFragment extends DialogFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         this.activity = (MainActivity) activity;
-
+        if (activity instanceof OnDialogClosedCallback) {
+            callback = (OnDialogClosedCallback) activity;
+        }
     }
 
     @Override
@@ -81,7 +83,7 @@ public class AddNetaDialogFragment extends DialogFragment {
         builder.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // TODO DBに追加する処理を書く
+                // DBに追加する処理
                 NetaMessages neta = new NetaMessages(editText.getText().toString());
                 NetaMessagesModel model = new NetaMessagesModel(activity);
                 try {
