@@ -1,5 +1,6 @@
 package net.formula97.android.app_maincamerajoke;
 
+import android.content.Intent;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
@@ -234,9 +235,19 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        AddNetaDialogFragment fragment = new AddNetaDialogFragment();
-        fragment.addCallback(this);
-        fragment.show(getSupportFragmentManager(), "AddNeta");
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // ネタ文言追加Dialogの表示
+                AddNetaDialogFragment fragment = new AddNetaDialogFragment();
+                fragment.addCallback(this);
+                fragment.show(getSupportFragmentManager(), "AddNeta");
+                break;
+            case R.id.message_setting:
+                // ネタ文言編集用Activityの表示
+                Intent i = new Intent(this, NetaConfigActivity.class);
+                startActivity(i);
+                break;
+        }
 
         return super.onOptionsItemSelected(item);
     }
