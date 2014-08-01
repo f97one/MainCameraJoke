@@ -7,4 +7,6 @@
         android:title="@string/add_neta"
         android:orderInCategory="100"
         app:showAsAction="never" />
+    <item android:id="@+id/message_setting"
+        android:title="@string/neta_config" />
 </menu>
