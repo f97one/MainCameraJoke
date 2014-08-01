@@ -26,7 +26,7 @@ import java.util.EventListener;
  */
 public class AddNetaDialogFragment extends DialogFragment {
 
-    private MainActivity activity;
+//    private MainActivity activity;
     private OnDialogClosedCallback callback = null;
 
     public interface OnDialogClosedCallback extends EventListener {
@@ -48,7 +48,7 @@ public class AddNetaDialogFragment extends DialogFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        this.activity = (MainActivity) activity;
+
         if (activity instanceof OnDialogClosedCallback) {
             callback = (OnDialogClosedCallback) activity;
         }
@@ -63,8 +63,8 @@ public class AddNetaDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         super.onCreateDialog(savedInstanceState);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        LayoutInflater layoutInflater = activity.getLayoutInflater();
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        LayoutInflater layoutInflater = getActivity().getLayoutInflater();
         View view = layoutInflater.inflate(R.layout.fragment_add_neta_dialog, null);
         builder.setView(view);
         final EditText editText = (EditText) view.findViewById(R.id.editText);
@@ -85,7 +85,7 @@ public class AddNetaDialogFragment extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
                 // DBに追加する処理
                 NetaMessages neta = new NetaMessages(editText.getText().toString());
-                NetaMessagesModel model = new NetaMessagesModel(activity);
+                NetaMessagesModel model = new NetaMessagesModel(getActivity());
                 try {
                     model.save(neta);
                 } catch (SQLException e) {
