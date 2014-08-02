@@ -6,6 +6,7 @@
     <string name="hello_world">hello world</string>
     <string name="open_helper_classname">net.formula97.android.app_maincamerajoke.DatabaseHelper</string>
     <string name="add_neta">表示メッセージを追加</string>
+    <string name="modify_neta">表示メッセージを修正</string>
     <string name="specify_here">表示したいメッセージを入力してください。</string>
     <string name="add">追加</string>
     <string name="title_activity_neta_config">NetaConfigActivity</string>

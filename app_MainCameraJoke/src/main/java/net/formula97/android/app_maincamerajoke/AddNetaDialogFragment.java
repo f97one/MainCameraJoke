@@ -28,6 +28,17 @@ public class AddNetaDialogFragment extends DialogFragment {
 
 //    private MainActivity activity;
     private OnDialogClosedCallback callback = null;
+    String receivedNetaString;
+
+    public String getReceivedNetaString() {
+        return receivedNetaString;
+    }
+
+    public void setReceivedNetaString(String receivedNetaString) {
+        this.receivedNetaString = receivedNetaString;
+    }
+
+    private static final String NETAMSG = "FlagNetaMsg";
 
     public interface OnDialogClosedCallback extends EventListener {
         public void onDialogClosed(boolean isPositive);
@@ -43,6 +54,16 @@ public class AddNetaDialogFragment extends DialogFragment {
 
     public void removeCallback() {
         this.callback = null;
+    }
+
+    public static AddNetaDialogFragment getDialog(String netaMsg) {
+        AddNetaDialogFragment fragment = new AddNetaDialogFragment();
+
+        Bundle b = new Bundle();
+        b.putString(NETAMSG, netaMsg);
+        fragment.setArguments(b);
+
+        return fragment;
     }
 
     @Override
@@ -63,12 +84,21 @@ public class AddNetaDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         super.onCreateDialog(savedInstanceState);
 
+        setReceivedNetaString(getArguments().getString(NETAMSG));
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater layoutInflater = getActivity().getLayoutInflater();
         View view = layoutInflater.inflate(R.layout.fragment_add_neta_dialog, null);
         builder.setView(view);
         final EditText editText = (EditText) view.findViewById(R.id.editText);
-        builder.setTitle(R.string.add_neta);
+        String title = "";
+        if (getReceivedNetaString() == null || getReceivedNetaString().trim().length() == 0) {
+            title = getString(R.string.add_neta);
+        } else {
+            title = getString(R.string.modify_neta);
+            editText.setText(getReceivedNetaString());
+        }
+        builder.setTitle(title);
         builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -84,17 +114,22 @@ public class AddNetaDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // DBに追加する処理
-                NetaMessages neta = new NetaMessages(editText.getText().toString());
                 NetaMessagesModel model = new NetaMessagesModel(getActivity());
-                try {
-                    model.save(neta);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+                NetaMessages neta = new NetaMessages(editText.getText().toString());
 
+                if (getReceivedNetaString() != null && getReceivedNetaString().trim().length() != 0
+                        && editText.getText().toString().trim().length() == 0) {
+                    // レコードを削除してよいかの確認ダイアログを出す
+                } else {
+                    try {
+                        model.save(neta);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
                 if (callback != null) {
-                    // ダイアログを閉じたことを通知する
-                    callback.onDialogClosed(true);
+                        // ダイアログを閉じたことを通知する
+                        callback.onDialogClosed(true);
                 }
             }
         });

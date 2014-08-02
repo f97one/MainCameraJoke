@@ -15,10 +15,11 @@ import java.util.List;
 
 
 public class NetaConfigActivity extends ActionBarActivity implements
-        View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+        View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, AddNetaDialogFragment.OnDialogClosedCallback {
 
-    ListView lvNetaList;
-    Button btnNetaConfigAdd;
+    private ListView lvNetaList;
+    private Button btnNetaConfigAdd;
+    private List<NetaMessages> messageses;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +38,7 @@ public class NetaConfigActivity extends ActionBarActivity implements
 
         btnNetaConfigAdd.setOnClickListener(this);
 
-        List<NetaMessages> messageses = new ArrayList<NetaMessages>();
+        messageses = new ArrayList<NetaMessages>();
         NetaMessagesModel model = new NetaMessagesModel(this);
         try {
             messageses = (List<NetaMessages>) model.findBySingleArg(new NetaMessages(), "userDefined", true);
@@ -48,21 +49,43 @@ public class NetaConfigActivity extends ActionBarActivity implements
         if (messageses.size() > 0) {
             NetaAdapter adapter = new NetaAdapter(this, R.layout.user_neta_list_item, messageses);
             lvNetaList.setAdapter(adapter);
+
+            lvNetaList.setOnItemClickListener(this);
+            lvNetaList.setOnItemLongClickListener(this);
         }
     }
 
     @Override
     public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btnNetaConfigAdd:
+                AddNetaDialogFragment fragment = AddNetaDialogFragment.getDialog("");
+                fragment.show(getSupportFragmentManager(), "AddNeta");
+                break;
+        }
 
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        String target = ((NetaMessages) parent.getAdapter().getItem(position)).getMessageBody();
+        AddNetaDialogFragment fragment = AddNetaDialogFragment.getDialog(target);
+        fragment.show(getSupportFragmentManager(), "AddNeta");
 
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         return false;
+    }
+
+    @Override
+    public void onDialogClosed(boolean isPositive) {
+        NetaMessagesModel model = new NetaMessagesModel(this);
+        try {
+            messageses = (List<NetaMessages>) model.findBySingleArg(new NetaMessages(), "userDefined", true);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

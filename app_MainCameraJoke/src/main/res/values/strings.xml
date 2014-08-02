@@ -6,6 +6,7 @@
     <string name="hello_world">hello world</string>
     <string name="open_helper_classname">net.formula97.android.app_maincamerajoke.DatabaseHelper</string>
     <string name="add_neta">Add message to post</string>
+    <string name="modify_neta">Modify message to post</string>
     <string name="specify_here">Please enter the message you want to display.</string>
     <string name="add">Add</string>
     <string name="neta_001">Not yet, I only suffered damage to the main camera mere!</string>
