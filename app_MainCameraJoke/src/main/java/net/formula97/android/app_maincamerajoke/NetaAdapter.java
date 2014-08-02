@@ -27,6 +27,7 @@ public class NetaAdapter extends ArrayAdapter<NetaMessages> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+//        super.getView(position, convertView, parent);
         View v;
         if (convertView != null) {
             v = convertView;
@@ -36,7 +37,7 @@ public class NetaAdapter extends ArrayAdapter<NetaMessages> {
         NetaMessages messages = netaLists.get(position);
 
         ((TextView) v.findViewById(R.id.netaBody)).setText(messages.getMessageBody());
-        return super.getView(position, convertView, parent);
+        return v;
     }
 
     /**
