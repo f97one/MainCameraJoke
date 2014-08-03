@@ -23,38 +23,16 @@ import java.util.List;
  * to handle interaction events.
  * Use the {@link AddNetaDialogFragment#newInstance} factory method to
  * create an instance of this fragment.
- *
  */
 public class AddNetaDialogFragment extends DialogFragment {
 
-//    private MainActivity activity;
-    private OnDialogClosedCallback callback = null;
-    String receivedNetaString;
-
-    public String getReceivedNetaString() {
-        return receivedNetaString;
-    }
-
-    public void setReceivedNetaString(String receivedNetaString) {
-        this.receivedNetaString = receivedNetaString;
-    }
-
     private static final String NETAMSG = "FlagNetaMsg";
-
-    public interface OnDialogClosedCallback extends EventListener {
-        public void onDialogClosed(boolean isPositive);
-    }
+    String receivedNetaString;
+    //    private MainActivity activity;
+    private OnDialogClosedCallback callback = null;
 
     public AddNetaDialogFragment() {
         // Required empty public constructor
-    }
-
-    public void addCallback(OnDialogClosedCallback callback) {
-        this.callback = callback;
-    }
-
-    public void removeCallback() {
-        this.callback = null;
     }
 
     public static AddNetaDialogFragment getDialog(String netaMsg) {
@@ -65,6 +43,22 @@ public class AddNetaDialogFragment extends DialogFragment {
         fragment.setArguments(b);
 
         return fragment;
+    }
+
+    public String getReceivedNetaString() {
+        return receivedNetaString;
+    }
+
+    public void setReceivedNetaString(String receivedNetaString) {
+        this.receivedNetaString = receivedNetaString;
+    }
+
+    public void addCallback(OnDialogClosedCallback callback) {
+        this.callback = callback;
+    }
+
+    public void removeCallback() {
+        this.callback = null;
     }
 
     @Override
@@ -142,12 +136,16 @@ public class AddNetaDialogFragment extends DialogFragment {
                     }
                 }
                 if (callback != null) {
-                        // ダイアログを閉じたことを通知する
-                        callback.onDialogClosed(true);
+                    // ダイアログを閉じたことを通知する
+                    callback.onDialogClosed(true);
                 }
             }
         });
 
         return builder.create();
+    }
+
+    public interface OnDialogClosedCallback extends EventListener {
+        public void onDialogClosed(boolean isPositive);
     }
 }

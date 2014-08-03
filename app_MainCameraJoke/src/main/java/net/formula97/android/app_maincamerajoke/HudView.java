@@ -9,20 +9,14 @@ import android.view.SurfaceView;
 
 /**
  * HUDちっくな線画を描画するSurfaceView。
- *
+ * <p/>
  * Created by f97one on 14/04/29.
  */
 public class HudView extends SurfaceView implements SurfaceHolder.Callback {
 
-    public Context getMContext() {
-        return mContext;
-    }
-
     private Context mContext;
     private SurfaceHolder mHolder;
-
     /**
-     *
      * @param context
      */
     public HudView(Context context) {
@@ -34,8 +28,13 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
         mHolder.addCallback(this);
     }
 
+    public Context getMContext() {
+        return mContext;
+    }
+
     /**
      * 継承されたsurfaceCreated。
+     *
      * @param holder
      * @see android.view.SurfaceHolder.Callback#surfaceCreated(android.view.SurfaceHolder)
      */
@@ -51,6 +50,7 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * 画面の中心にガンマーカーを描く。
+     *
      * @param canvas 描画対象のCanvasオブジェクト
      */
     private void drawGunMarker(Canvas canvas) {
@@ -100,6 +100,7 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * 継承されたsurfaceChanged。
+     *
      * @param holder
      * @param format
      * @param width
@@ -113,6 +114,7 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * 継承されたsurfaceDestroyed。
+     *
      * @param holder
      * @see android.view.SurfaceHolder.Callback#surfaceDestroyed(android.view.SurfaceHolder)
      */

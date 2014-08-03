@@ -7,7 +7,7 @@ import com.j256.ormlite.table.DatabaseTable;
  * ネタ表示するデータを格納するエンティティクラス。
  * Created by HAJIME on 2014/06/19.
  */
-@DatabaseTable(tableName  = "NetaMessages")
+@DatabaseTable(tableName = "NetaMessages")
 public class NetaMessages {
 
     /**
@@ -56,24 +56,24 @@ public class NetaMessages {
         setUserDefined(userDefined);
     }
 
-    public void set_id(Integer _id) {
-        this._id = _id;
-    }
-
     public Integer get_id() {
         return _id;
+    }
+
+    public void set_id(Integer _id) {
+        this._id = _id;
     }
 
     public String getMessageBody() {
         return messageBody;
     }
 
-    public boolean isUserDefined() {
-        return userDefined;
-    }
-
     public void setMessageBody(String messageBody) {
         this.messageBody = messageBody;
+    }
+
+    public boolean isUserDefined() {
+        return userDefined;
     }
 
     public void setUserDefined(boolean userDefined) {

@@ -62,6 +62,7 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
      * WAKE_LOCKのインスタンスを保持するフィールド。
      */
     PowerManager.WakeLock lock = null;
+    Handler handler;
     /**
      * プレビュー表示中か否かを格納するフラグ。
      */
@@ -70,7 +71,6 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
     private int previewAreaWidth;
     private byte[] mFrameBuffer;
     private int offset = 32;
-    Handler handler;
     private boolean netaPostOk = false;
     private boolean enableAnalyze = true;
 

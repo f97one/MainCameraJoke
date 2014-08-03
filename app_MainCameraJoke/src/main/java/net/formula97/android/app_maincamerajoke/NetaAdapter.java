@@ -13,9 +13,9 @@ import java.util.List;
  * Created by HAJIME on 2014/08/02.
  */
 public class NetaAdapter extends ArrayAdapter<NetaMessages> {
+    List<NetaMessages> netaLists;
     private Context mContext;
     private int resId;
-    List<NetaMessages> netaLists;
     private LayoutInflater inflater;
 
     public NetaAdapter(Context context, int resource, List<NetaMessages> objects) {

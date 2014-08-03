@@ -115,9 +115,9 @@ public class BaseModel {
     /**
      * 単一のフィールドに指定した値を持つレコードを取得する。
      *
-     * @param entity 取得したいエンティティ
+     * @param entity    取得したいエンティティ
      * @param fieldName 検査するフィールド名称
-     * @param value 検査対象の値
+     * @param value     検査対象の値
      * @param <T>
      * @return 条件に合致するレコードの集合
      * @throws SQLException
@@ -132,7 +132,7 @@ public class BaseModel {
     /**
      * フィールドと値のセットに該当するレコードを取得する。
      *
-     * @param entity 取得したいエンティティ
+     * @param entity      取得したいエンティティ
      * @param fieldValues フィールドと値のセット
      * @param <T>
      * @return 条件に合致するレコードの集合

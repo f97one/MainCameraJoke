@@ -11,7 +11,7 @@ import java.sql.SQLException;
 
 /**
  * データベース操作用のクラス。
- *
+ * <p/>
  * Created by HAJIME on 2014/06/19.
  */
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
