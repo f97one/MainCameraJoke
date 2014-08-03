@@ -75,7 +75,10 @@ public class NetaConfigActivity extends ActionBarActivity implements
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        return false;
+        String target = ((NetaMessages) parent.getAdapter().getItem(position)).getMessageBody();
+        LongClickMenuDialogFragment fragment = LongClickMenuDialogFragment.getInstance(target);
+        fragment.show(getSupportFragmentManager(), "ModifyNeta");
+        return true;
     }
 
     @Override

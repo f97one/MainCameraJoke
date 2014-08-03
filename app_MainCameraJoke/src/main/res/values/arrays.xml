@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="longClickMenu">
+        <item>@string/delete_message</item>
+        <item>@string/modify_message</item>
+    </string-array>
+</resources>
