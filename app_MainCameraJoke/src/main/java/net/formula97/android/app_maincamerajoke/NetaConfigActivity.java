@@ -49,10 +49,9 @@ public class NetaConfigActivity extends ActionBarActivity implements
         if (messageses.size() > 0) {
             NetaAdapter adapter = new NetaAdapter(this, R.layout.user_neta_list_item, messageses);
             lvNetaList.setAdapter(adapter);
-
-            lvNetaList.setOnItemClickListener(this);
-            lvNetaList.setOnItemLongClickListener(this);
         }
+        lvNetaList.setOnItemClickListener(this);
+        lvNetaList.setOnItemLongClickListener(this);
     }
 
     @Override
@@ -84,6 +83,10 @@ public class NetaConfigActivity extends ActionBarActivity implements
         NetaMessagesModel model = new NetaMessagesModel(this);
         try {
             messageses = (List<NetaMessages>) model.findBySingleArg(new NetaMessages(), "userDefined", true);
+            lvNetaList.setAdapter(null);
+            NetaAdapter adapter = new NetaAdapter(this, R.layout.user_neta_list_item, messageses);
+            lvNetaList.setAdapter(adapter);
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

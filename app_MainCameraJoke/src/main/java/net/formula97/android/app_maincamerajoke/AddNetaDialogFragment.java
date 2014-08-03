@@ -13,6 +13,7 @@ import android.widget.EditText;
 
 import java.sql.SQLException;
 import java.util.EventListener;
+import java.util.List;
 
 
 /**
@@ -92,7 +93,7 @@ public class AddNetaDialogFragment extends DialogFragment {
         builder.setView(view);
         final EditText editText = (EditText) view.findViewById(R.id.editText);
         String title = "";
-        if (getReceivedNetaString() == null || getReceivedNetaString().trim().length() == 0) {
+        if (StringUtils.isNullOrEmpty(getReceivedNetaString().trim())) {
             title = getString(R.string.add_neta);
         } else {
             title = getString(R.string.modify_neta);
@@ -115,13 +116,26 @@ public class AddNetaDialogFragment extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
                 // DBに追加する処理
                 NetaMessagesModel model = new NetaMessagesModel(getActivity());
-                NetaMessages neta = new NetaMessages(editText.getText().toString());
 
-                if (getReceivedNetaString() != null && getReceivedNetaString().trim().length() != 0
+                if (!StringUtils.isNullOrEmpty(getReceivedNetaString().trim())
                         && editText.getText().toString().trim().length() == 0) {
                     // レコードを削除してよいかの確認ダイアログを出す
+                    try {
+                        List<NetaMessages> results = (List<NetaMessages>) model.findBySingleArg(new NetaMessages(), "messageBody", getReceivedNetaString());
+                        model.delete(results.get(0));
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     try {
+                        NetaMessages neta;
+                        if (StringUtils.isNullOrEmpty(getReceivedNetaString().trim())) {
+                            neta = new NetaMessages(editText.getText().toString());
+                        } else {
+                            List<NetaMessages> results = (List<NetaMessages>) model.findBySingleArg(new NetaMessages(), "messageBody", getReceivedNetaString());
+                            neta = results.get(0);
+                            neta.setMessageBody(editText.getText().toString());
+                        }
                         model.save(neta);
                     } catch (SQLException e) {
                         e.printStackTrace();
