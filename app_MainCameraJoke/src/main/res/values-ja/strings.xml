@@ -12,6 +12,9 @@
     <string name="title_activity_neta_config">NetaConfigActivity</string>
     <string name="neta_config">メッセージ設定</string>
     <string name="neta_config_inst">クリックしてメッセージを編集します</string>
+    <string name="delete_message">メッセージを削除</string>
+    <string name="modify_message">メッセージを修正</string>
+    <string name="update">更新</string>
 
     <string name="neta_001">まだだ、たかがメインカメラをやられただけだ！</string>
     <string name="neta_002">この力を使うのに、いちいち三万円もするカメラをぶっ叩いて壊さなければならんがなッ！</string>

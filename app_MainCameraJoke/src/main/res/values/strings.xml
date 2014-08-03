@@ -9,11 +9,15 @@
     <string name="modify_neta">Modify message to post</string>
     <string name="specify_here">Please enter the message you want to display.</string>
     <string name="add">Add</string>
-    <string name="neta_001">Not yet, I only suffered damage to the main camera mere!</string>
-    <string name="neta_002">Every time I use this ability, I must destroy the camera to be JPY 30,000- by hitting violently!</string>
-    <string name="neta_003">My eyes... is burning!!!</string>
     <string name="title_activity_neta_config">NetaConfigActivity</string>
     <string name="neta_config">Message Setting</string>
     <string name="neta_config_inst">Click to edit stored message.</string>
+    <string name="delete_message">Delete message</string>
+    <string name="modify_message">Modify message</string>
+    <string name="update">Update</string>
+
+    <string name="neta_001">Not yet, I only suffered damage to the main camera mere!</string>
+    <string name="neta_002">Every time I use this ability, I must destroy the camera to be JPY 30,000- by hitting violently!</string>
+    <string name="neta_003">My eyes... is burning!!!</string>
 
 </resources>
