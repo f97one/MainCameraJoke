@@ -1,9 +1,7 @@
 package net.formula97.android.app_maincamerajoke;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -15,7 +13,8 @@ import java.util.List;
 
 
 public class NetaConfigActivity extends ActionBarActivity implements
-        View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, AddNetaDialogFragment.OnDialogClosedCallback {
+        View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
+        AddNetaDialogFragment.OnDialogClosedCallback, LongClickMenuDialogFragment.OnDialogCloseCallback {
 
     private ListView lvNetaList;
     private Button btnNetaConfigAdd;
@@ -83,6 +82,13 @@ public class NetaConfigActivity extends ActionBarActivity implements
 
     @Override
     public void onDialogClosed(boolean isPositive) {
+        refreshList();
+    }
+
+    /**
+     * ListViewをリフレッシュする。
+     */
+    private void refreshList() {
         NetaMessagesModel model = new NetaMessagesModel(this);
         try {
             messageses = (List<NetaMessages>) model.findBySingleArg(new NetaMessages(), "userDefined", true);
@@ -93,5 +99,10 @@ public class NetaConfigActivity extends ActionBarActivity implements
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onDialogClose(int which) {
+        refreshList();
     }
 }
