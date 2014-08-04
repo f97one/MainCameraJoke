@@ -87,10 +87,13 @@ public class AddNetaDialogFragment extends DialogFragment {
         builder.setView(view);
         final EditText editText = (EditText) view.findViewById(R.id.editText);
         String title = "";
+        String caption = "";
         if (StringUtils.isNullOrEmpty(getReceivedNetaString().trim())) {
             title = getString(R.string.add_neta);
+            caption = getString(R.string.add);
         } else {
             title = getString(R.string.modify_neta);
+            caption = getString(R.string.update);
             editText.setText(getReceivedNetaString());
         }
         builder.setTitle(title);
@@ -105,7 +108,7 @@ public class AddNetaDialogFragment extends DialogFragment {
                 }
             }
         });
-        builder.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(caption, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // DBに追加する処理
