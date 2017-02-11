@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,7 +32,7 @@ import java.util.Random;
  *
  * @author HAJIME Fukuna
  */
-public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback, Camera.PreviewCallback, AddNetaDialogFragment.OnDialogClosedCallback {
+public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback, Camera.PreviewCallback, AddNetaDialogFragment.OnDialogClosedCallback {
 
     /**
      * WAKE_LOCKで使う識別子。

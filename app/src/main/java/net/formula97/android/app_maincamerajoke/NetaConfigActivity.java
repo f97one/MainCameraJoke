@@ -1,7 +1,7 @@
 package net.formula97.android.app_maincamerajoke;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class NetaConfigActivity extends ActionBarActivity implements
+public class NetaConfigActivity extends AppCompatActivity implements
         View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
         AddNetaDialogFragment.OnDialogClosedCallback, LongClickMenuDialogFragment.OnDialogCloseCallback {
 
