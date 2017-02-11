@@ -36,7 +36,7 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
      * 継承されたsurfaceCreated。
      *
      * @param holder
-     * @see android.view.SurfaceHolder.Callback#surfaceCreated(android.view.SurfaceHolder)
+     * @see SurfaceHolder.Callback#surfaceCreated(SurfaceHolder)
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -105,7 +105,7 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
      * @param format
      * @param width
      * @param height
-     * @see android.view.SurfaceHolder.Callback#surfaceChanged(android.view.SurfaceHolder, int, int, int)
+     * @see SurfaceHolder.Callback#surfaceChanged(SurfaceHolder, int, int, int)
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -116,7 +116,7 @@ public class HudView extends SurfaceView implements SurfaceHolder.Callback {
      * 継承されたsurfaceDestroyed。
      *
      * @param holder
-     * @see android.view.SurfaceHolder.Callback#surfaceDestroyed(android.view.SurfaceHolder)
+     * @see SurfaceHolder.Callback#surfaceDestroyed(SurfaceHolder)
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
