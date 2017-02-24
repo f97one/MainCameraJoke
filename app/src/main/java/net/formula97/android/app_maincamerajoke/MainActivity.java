@@ -7,7 +7,6 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -16,6 +15,7 @@ import android.view.MenuItem;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -34,10 +34,6 @@ import java.util.Random;
  */
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback, Camera.PreviewCallback, AddNetaDialogFragment.OnDialogClosedCallback {
 
-    /**
-     * WAKE_LOCKで使う識別子。
-     */
-    private static final String WAKE_LOCK_TAG = "net.formula97.android.app_maincamerajoke.ACTION_SCREEN_KEEP";
     /**
      * フォーカス調整を定期実行するときの実行間隔（単位：ミリ秒）
      */
@@ -58,10 +54,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
      * ガンマーカーを保持するSurfaceViewのフィールド。
      */
     SurfaceView hudView;
-    /**
-     * WAKE_LOCKのインスタンスを保持するフィールド。
-     */
-    PowerManager.WakeLock lock = null;
     Handler handler;
     /**
      * プレビュー表示中か否かを格納するフラグ。
@@ -128,12 +120,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        handler = new Handler();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        // WAKE_LOCKの取得準備
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        lock = powerManager.newWakeLock(
-                PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, WAKE_LOCK_TAG);
+        handler = new Handler();
 
         // Dialogを閉じた時のリスナーをセットする
 
@@ -167,9 +156,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
 
         }
-
-        // WAKE_LOCKを取得する
-        lock.acquire();
 
         // オーバーレイ表示
         HudView hudViewCallback = new HudView(getApplicationContext());
@@ -211,9 +197,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         super.onPause();
         releaseCam();
         // このままアプリを終了させるので、Handlerの再定義は行わない。
-
-        // WAKE_LOCKを開放する
-        lock.release();
     }
 
     @Override
