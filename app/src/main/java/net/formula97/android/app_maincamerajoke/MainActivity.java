@@ -311,9 +311,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
 
         if (BuildConfig.DEBUG) {
-            Log.d("MainActivity#surfaceChanged", "Supported preview size as follow :");
+            Log.d("surfaceChanged", "Supported preview size as follow :");
             for (int i = 0; i < sizeList.size(); i++) {
-                Log.d("MainActivity#surfaceChanged", "Type index " + String.valueOf(i) + " : " +
+                Log.d("surfaceChanged", "Type index " + String.valueOf(i) + " : " +
                         sizeList.get(i).width + " x " + sizeList.get(i).height);
             }
         }
@@ -350,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                         supportedFormatName = "UNKNOWN";
                         break;
                 }
-                Log.d("MainActivity#surfaceChanged", "Supported preview format : " + supportedFormatName);
+                Log.d("surfaceChanged", "Supported preview format : " + supportedFormatName);
             }
         }
         // プレビューフォーマットをNV21に固定
@@ -371,15 +371,15 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
         }
         if (BuildConfig.DEBUG) {
-            Log.d("MainActivity#surfaceChanged", "Preview width : " + String.valueOf(previewAreaWidth));
-            Log.d("MainActivity#surfaceChanged", "Preview height : " + String.valueOf(previewAreaHeight));
+            Log.d("surfaceChanged", "Preview width : " + String.valueOf(previewAreaWidth));
+            Log.d("surfaceChanged", "Preview height : " + String.valueOf(previewAreaHeight));
         }
         parameters.setPreviewSize(previewAreaWidth, previewAreaHeight);
 
         // フレームバッファの計算
         int frameBufferSize = previewAreaWidth * previewAreaHeight * ImageFormat.getBitsPerPixel(parameters.getPreviewFormat()) / 8;
         if (BuildConfig.DEBUG) {
-            Log.d("MainActivity#surfaceChanged", "Frame buffer size = " + String.valueOf(frameBufferSize));
+            Log.d("surfaceChanged", "Frame buffer size = " + String.valueOf(frameBufferSize));
         }
         mFrameBuffer = new byte[frameBufferSize];
 
@@ -475,20 +475,20 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             netaPostOk = analyzePreviewImage(data);
             if (netaPostOk) {
                 if (BuildConfig.DEBUG) {
-                    Log.i("MainActivity#onPreviewFrame", "NETA post OK");
+                    Log.i("onPreviewFrame", "NETA post OK");
                 }
                 if (!alreadyPost) {
                     alreadyPost = true;
 
                     // ネタを表示する
                     if (BuildConfig.DEBUG) {
-                        Log.i("MainActivity#onPreviewFrame", "posted with handler.");
+                        Log.i("onPreviewFrame", "posted with handler.");
                     }
                     handler.postDelayed(run, 10 * 1000);
                 }
             } else {
                 if (BuildConfig.DEBUG) {
-                    Log.i("MainActivity#onPreviewFrame", "NETA post NG");
+                    Log.i("onPreviewFrame", "NETA post NG");
                 }
                 handler.removeCallbacks(run);
                 alreadyPost = false;
